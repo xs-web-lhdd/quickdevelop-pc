@@ -41,8 +41,8 @@
               <el-form ref="form" :model="login" label-width="80px">
                 <el-form-item>
                   <el-input
-                    v-model="registered.mobile"
-                    placeholder="请输入手机号码"
+                    v-model="registered.username"
+                    placeholder="请输入用户名"
                   ></el-input>
                 </el-form-item>
                 <el-form-item>
@@ -54,25 +54,15 @@
                 </el-form-item>
                 <el-form-item>
                   <el-input
-                    v-model="registered.nickname"
-                    placeholder="请输入昵称"
+                    v-model="registered.email"
+                    placeholder="请输入电子邮箱"
                   ></el-input>
                 </el-form-item>
-                <el-form-item class="codeContainer">
+                <el-form-item>
                   <el-input
-                    v-model="registered.code"
-                    placeholder="请输入验证码"
+                    v-model="registered.phonenumber"
+                    placeholder="请输入手机号码"
                   ></el-input>
-                  <div class="codeButtonContainer">
-                    <el-button
-                      size="mini"
-                      class="getcode"
-                      v-if="!isCountDownShow"
-                      @click="getCode"
-                      >获取验证码</el-button
-                    >
-                    <div class="countDown" v-else>{{ countDownSecond }} s</div>
-                  </div>
                 </el-form-item>
                 <el-form-item>
                   <el-button type="primary" @click="clickRegistered"
@@ -89,9 +79,6 @@
 </template>
 
 <script>
-// 倒计时名称
-let timer;
-
 export default {
   name: "Login",
   data() {
@@ -101,17 +88,12 @@ export default {
         password: "123456",
       },
       registered: {
-        mobile: "",
+        phonenumber: "",
         password: "",
-        code: "",
-        nickname: "",
-        avatar: null,
+        username: "",
+        phonenumber: "",
       },
       activeName: "first",
-      // 倒计时秒数
-      countDownSecond: 60,
-      // 是否显示秒数
-      isCountDownShow: false,
     };
   },
   methods: {
@@ -125,7 +107,7 @@ export default {
         // this.$store.commit("updateUserInfo", res.data.data);
 
         // 将tokenName和tokenValue 以及用户信息保存至本地
-        window.localStorage.setItem("tokenName", res.data.data.tokenName);
+        // window.localStorage.setItem("tokenName", res.data.data.tokenName);
         window.localStorage.setItem("tokenValue", res.data.data.tokenValue);
         window.localStorage.setItem("userName", this.login.username);
 
@@ -140,49 +122,20 @@ export default {
       console.log(e.name);
     },
 
-    // 获取验证码
-    async getCode() {
-      this.isCountDownShow = true;
-      let res = await this.$request(
-        `/edumsm/msm/send/${this.registered.mobile}`
-      );
-      console.log(res);
-      if (res.data.success) {
-        this.startCountDown();
-      }
-    },
-
-    // 倒计时
-    startCountDown() {
-      this.countDownSecond = 60;
-      timer = setInterval(() => {
-        this.countDownSecond--;
-        if (this.countDownSecond == 0) {
-          clearInterval(timer);
-          this.isCountDownShow = false;
-        }
-      }, 1000);
-    },
     // 点击注册的回调
     async clickRegistered() {
-      let res = await this.$request(
-        "/educenter/member/register",
-        this.registered,
-        "post",
-        "params"
-      );
+      let res = await this.$request("/register", this.registered, "post");
       console.log(res);
       // 如果注册成功，清空所有数据并跳转至登录界面，自动填写手机号码
-      if (res.data.success) {
+      if (res.data.code == 200) {
         this.$message.success("注册成功!");
-        this.login.mobile = this.registered.mobile;
+        this.login.username = this.registered.username;
         this.activeName = "first";
         this.registered = {
-          mobile: "",
+          phonenumber: "",
           password: "",
-          code: "",
-          nickname: "",
-          avatar: null,
+          username: "",
+          phonenumber: "",
         };
       } else {
         this.$message.error("注册失败,请稍后重试!");
@@ -265,7 +218,7 @@ export default {
 
 .el-tabs /deep/ .el-tabs__item {
   border: none !important;
-  font-size: 18px;
+  font-size: 16px;
   height: 50px;
   line-height: 50px;
 }

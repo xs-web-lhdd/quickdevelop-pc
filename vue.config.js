@@ -28,7 +28,15 @@ module.exports = {
                 pathRewrite: {
                     '^/articleImg': ''
                 }
-            }
+            },
+            '/imgreq': {
+                target: 'https://chen110.oss-cn-guangzhou.aliyuncs.com/',
+                changeOrigin: true,
+                ws: true,
+                pathRewrite: {
+                    '^/imgreq': ''
+                }
+            },
         }
     },
 }

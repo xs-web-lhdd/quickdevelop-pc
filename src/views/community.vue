@@ -3,7 +3,13 @@
     <div class="community">
       <div class="left">
         <div class="write">
-          <el-button type="primary" class="writeButton"> 写文章</el-button>
+          <el-button
+            type="primary"
+            class="writeButton"
+            @click="isWriteCardShow = true"
+          >
+            写文章</el-button
+          >
         </div>
         <div class="sort">
           <div
@@ -25,7 +31,7 @@
         </div>
       </div>
       <div class="right">
-        <div class="article">
+        <div class="article" v-loading="isDataLoad">
           <div
             class="articleItem"
             v-for="(item, index) in articleList"
@@ -68,17 +74,42 @@
           </div>
         </div>
 
-        <div class="tips">下面没有内容了哦</div>
+        <div class="bottom" v-if="!isDataLoad">
+          <!-- 分页组件 -->
+          <el-pagination
+            background
+            layout="prev, pager, next"
+            :total="totalCount"
+            :current-page="currentPage"
+          >
+          </el-pagination>
+        </div>
       </div>
     </div>
+
+    <!-- 写文章组件 -->
+    <write-card
+      :isCardShow="isWriteCardShow"
+      @reFreshArticalList="reFreshArticalList"
+      @closeCard="isWriteCardShow = false"
+    ></write-card>
+
+    <!-- 返回顶部组件 -->
+    <go-top></go-top>
   </div>
 </template>
 
 <script>
 import { handleArticleDateShow } from "plugins/utils.js";
+import GoTop from "components/goTop/GoTop.vue";
+import WriteCard from "components/writeCard/WriteCard.vue";
 
 export default {
   name: "community",
+  components: {
+    GoTop,
+    WriteCard,
+  },
   data() {
     return {
       imgArr: [],
@@ -90,32 +121,47 @@ export default {
       allType: [],
       // 当前分类 Id 0代表所有文章
       currentTypeId: 0,
+      // 是否显示写文章组件
+      isWriteCardShow: false,
+      // 总条数
+      totalCount: 0,
+      // 是否正在加载数据
+      isDataLoad: true,
     };
   },
   methods: {
     // 请求
     // 获取所有文章
     async getAllArticle() {
+      this.isDataLoad = true;
       let res = await this.$request("/dqarticle/list", {
         pageNum: this.currentPage,
         pageSize: 10,
       });
       // console.log(res);
-      this.articleList.push(...res.data.data.list);
+      if (res.data.code == 200) {
+        this.totalCount = res.data.data.total;
+        this.articleList = res.data.data.list;
+        this.isDataLoad = false;
+      }
     },
 
     // 获取所有分类
     async getAllType() {
-      let res = await this.$request("/dqtype/list");
+      let res = await this.$request("/dqtype/list", { pageSize: 30 });
       // console.log(res);
       this.allType = res.data.data.list;
     },
 
     // 根据类型的id查询文章
     async getArticleById(id) {
-      let res = await this.$request(`/dqarticle/list/${id}`);
+      this.isDataLoad = true;
+      let res = await this.$request(`/dqarticle/type/${id}`);
       console.log(res);
-      this.articleList.push(...res.data.data);
+      if (res.data.code == 200) {
+        this.articleList = res.data.data;
+        this.isDataLoad = false;
+      }
     },
 
     // 事件
@@ -131,6 +177,16 @@ export default {
         this.getAllArticle();
       } else {
         this.getArticleById(id);
+      }
+    },
+
+    // 添加文章成功的回调
+    // 根据当前分类重新获取文章数据
+    reFreshArticalList() {
+      if (this.currentTypeId == 0) {
+        this.getAllArticle();
+      } else {
+        this.getArticleById(this.currentTypeId);
       }
     },
   },
@@ -153,7 +209,7 @@ export default {
 
 .community {
   display: flex;
-  min-width: 1000px;
+  max-width: 1200px;
   width: 85vw;
 }
 
@@ -209,7 +265,7 @@ export default {
 }
 
 .ItemCenter {
-  width: 80%;
+  width: 700px;
   margin: 0 10px;
 }
 
@@ -275,5 +331,15 @@ export default {
   font-size: 14px;
   color: rgb(158, 158, 158);
   margin: 20px 0;
+}
+
+.bottom {
+  width: 100%;
+  text-align: center;
+  margin: 40px 0;
+}
+
+.communityContainer /deep/ .el-loading-spinner {
+  margin-top: 80px;
 }
 </style>

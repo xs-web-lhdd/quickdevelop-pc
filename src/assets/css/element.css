@@ -1,14 +1,35 @@
+.el-button:focus, .el-button:hover {
+  border: 1px solid #DCDFE6;
+  color: #606266;
+  background-color: #f9f9f9;
+}
+
 .el-button--primary {
   background-color: #18365b;
   border-color: #18365b;
+  color: white !important;
 }
 
 .el-button--primary:hover {
-  background-color: #1d3d64;
-  border-color: #1d3d64;
+  background-color: #244b7a;
+  border-color: #244b7a;
+  color: white;
 }
 
 .el-button--primary:focus {
   background-color: #18365b;
   border-color: #18365b;
+}
+
+.el-message-box__headerbtn:hover  .el-message-box__close{
+  color: #bbb !important;
+}
+
+.el-pagination.is-background .el-pager li:not(.disabled).active {
+  background-color: #255896;
+  color: white !important;
+}
+
+.el-pagination.is-background .el-pager li:not(.disabled):hover {
+  color: #2d68b1;
 }

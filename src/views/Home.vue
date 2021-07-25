@@ -4,11 +4,17 @@
     <ul>
       <li v-for="(item, index) in 100" :key="index">{{ item }}</li>
     </ul>
+
+    <!-- 返回顶部组件 -->
+    <go-top></go-top>
+    <!-- <el-backtop></el-backtop> -->
   </div>
 </template>
 
 <script>
+import GoTop from "components/goTop/GoTop.vue";
 export default {
+  components: { GoTop },
   name: "home",
   data() {
     return {};

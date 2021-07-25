@@ -3,7 +3,7 @@
     <div class="articleDetail">
       <div class="left">
         <div class="title">
-          万事屋有约Vol.13｜在“我又买鲜花啦”小组感受花花带来的美好
+          {{ articalData.articleTitle }}
         </div>
         <!-- 用户信息 -->
         <div class="author">
@@ -16,64 +16,257 @@
               fit="cover"
             />
           </div>
-          <div class="authorName">组长万事屋</div>
-          <div class="publishDate">2021-07-07 14:58:23</div>
-        </div>
-        <!-- 文章内容 -->
-        <div class="content">
-          鲜花，对于“视花如命”的人来说，可不仅仅只是简单的装饰品。它们像一面镜子，映射着养花人的心情；
-          又像一位知心朋友，陪伴着我们度过一个又一个阴天和黑夜……有了花花点缀的生活，就连空气都充满着芳香。
-          在“我又买鲜花啦”小组，六万余名花花爱好者聚集在这里，分享、交流鲜花的一切。
-          <el-image :src="require('assets/img/test.jpg')" class="contentImg" />
-        </div>
-        <!-- 评论区 -->
-        <div class="commentArea">
-          <div class="commentText">评论区</div>
-          <div class="commentItem" v-for="(item, index) in 10" :key="index">
-            <div class="userAvatar">
-              <el-image
-                class="avatar"
-                :src="require('assets/img/userAvatar.png')"
-                alt=""
-                lazy
-                fit="cover"
-              />
-            </div>
-            <div class="commentInfo">
-              <div class="author userInfo">
-                <div class="authorName userNickName">可爱的江湖骗子</div>
-                <div class="publishDate commentDate">2021-07-07 16:33:56</div>
-              </div>
-              <div class="commentContent">
-                鲜花组里的花花真的好好看，看了就会想让人马上买花花，好好打理一下自己房间里的一隅小天地
-                鲜花组里的花花真的好好看，看了就会想让人马上买花花，好好打理一下自己房间里的一隅小天地
-              </div>
+          <div class="authorName">{{ articalData.authorNickname }}</div>
+          <div class="publishDate">
+            {{ articalData.createTime }}
+            <div
+              class="updateArtical"
+              v-if="articalData.autorId == $store.state.userInfo.userId"
+            >
+              <div @click="isWriteCardShow = true">更新文章</div>
+              <div class="fenge">|</div>
+              <div @click="deleteCurrentArticle">删除文章</div>
             </div>
           </div>
         </div>
+        <!-- 文章内容 -->
+        <div class="content">
+          {{ articalData.articleContent }}
+          <el-image :src="require('assets/img/test.jpg')" class="contentImg" />
+        </div>
+        <div class="commentControl">
+          <div
+            class="commentControlItem"
+            :class="isUserLike ? 'controlItemDone' : ''"
+            @click="likeCurrentArticle(!isUserLike)"
+          >
+            <i class="iconfont icon-dianzan"></i>
+            {{ isUserLike ? "已点赞" : "点赞" }}
+          </div>
+          <div class="likeUsersAvatar">
+            <el-image
+              v-for="(item, index) in likeUserList.length > 3
+                ? likeUserList.slice(
+                    likeUserList.length - 3,
+                    likeUserList.length
+                  )
+                : likeUserList"
+              :key="index"
+              :src="
+                item.avatar ? '/articleImg' + item.avatar.split('.com')[1] : ''
+              "
+              fit="cover"
+            ></el-image>
+          </div>
+        </div>
+        <!-- 评论区 -->
+        <comment-area
+          :commentList="commentList"
+          :floorCommentList="floorCommentList"
+          @reFreshComment="({ type, index }) => reFreshComment(type, index)"
+          @getFloorCommentList="({ id, index }) => getFloorComment(id, index)"
+        ></comment-area>
       </div>
-      <div class="right">广告位招租</div>
+      <div class="rightContainer">
+        <div
+          class="right articleRight"
+          :class="isRightFixed ? 'rightFixed' : ''"
+        >
+          广告位招租
+        </div>
+      </div>
     </div>
+    <!-- 返回顶部组件 -->
+    <!-- 编辑组件 -->
+    <write-card
+      :isCardShow="isWriteCardShow"
+      :originArticle="articalData"
+      @closeCard="isWriteCardShow = false"
+      @reFreshArticalList="getArticalData($route.params.id)"
+    ></write-card>
+    <go-top></go-top>
   </div>
 </template>
 
 <script>
+import CommentArea from "../components/commentArea/CommentArea.vue";
+import GoTop from "../components/goTop/GoTop.vue";
+import WriteCard from "../components/writeCard/WriteCard.vue";
 export default {
   name: "articleDetail",
-  data() {
-    return {};
+  components: {
+    CommentArea,
+    GoTop,
+    WriteCard,
   },
-  methods: {},
+
+  data() {
+    return {
+      // right是否改为固定定位
+      isRightFixed: false,
+      // 文章数据
+      articalData: {},
+      // 评论数据
+      commentList: [],
+      // 楼层评论数据
+      floorCommentList: [],
+      // 当前用户是否点赞了该文章
+      isUserLike: false,
+      // 该文章的点赞数量
+      likeCount: 0,
+      // 点赞了该文章的用户
+      likeUserList: [],
+      // 是否显示编辑组件
+      isWriteCardShow: false,
+    };
+  },
+  methods: {
+    // 请求
+    // 请求文章数据
+    async getArticalData(id) {
+      let res = await this.$request(`/dqarticle/${id}`);
+      // console.log(res);
+      this.articalData = res.data.data;
+    },
+
+    // 获取文章的点赞数
+    async getArticleLike(id) {
+      let res = await this.$request(`/dqlike/getlikes/${id}`);
+      console.log(res);
+    },
+
+    // 获取当前用户的点赞状态
+    async getIsUserLike(id) {
+      let res = await this.$request(`/dqlike/status/${id}`);
+      // console.log(res);
+      this.isUserLike = res.data.data == 1;
+    },
+
+    // 请求文章的所有评论
+    async getArticalComment(id) {
+      let res = await this.$request(`/dqcomment/dqarticle/${id}`);
+      // console.log(res);
+      if (res.data.code == 200) {
+        res.data.data.list.forEach((item, index, arr) => {
+          arr[index].floorCommentList = [];
+        });
+
+        this.commentList = res.data.data.list;
+      }
+    },
+
+    // 请求当前评论的二级回复
+    async getFloorComment(id, index) {
+      let res = await this.$request(`/dqcomment/dqroot/${id}`);
+      // console.log(res);
+      // this.floorCommentList = res.data.data.list;
+      if (res.data.code == 200) {
+        this.commentList[index].floorCommentList = res.data.data.list;
+      } else {
+        // 随便往数组添加个数
+        this.commentList[index].floorCommentList.push(1);
+        this.$message.warning("此评论暂无回复哦!");
+      }
+    },
+
+    // 请求点赞指定文章的所有用户
+    async getLikeUsers(id) {
+      let res = await this.$request(`/dqlike/getlikeusers/${id}`);
+      // console.log(res);
+
+      if (res.data.code == 200) {
+        this.likeUserList = res.data.data;
+      } else if (res.data.code == 404) {
+        this.likeUserList = [];
+      }
+    },
+
+    // 事件
+    // 更新评论数据
+    reFreshComment(type, index) {
+      if (type == 1) {
+        this.getArticalComment(this.$route.params.id);
+      } else if (type == 2) {
+        // console.log(index);
+        this.getFloorComment(this.commentList[index].commentId, index);
+      }
+    },
+
+    // 点击喜欢文章的回调
+    async likeCurrentArticle(flag) {
+      if (flag) {
+        let res = await this.$request(`dqlike/like/${this.$route.params.id}`);
+        if (res.data.code == 200) {
+          this.isUserLike = flag;
+          this.getLikeUsers(this.$route.params.id);
+        }
+      } else {
+        let res = await this.$request(`dqlike/unlike/${this.$route.params.id}`);
+        if (res.data.code == 200) {
+          this.isUserLike = flag;
+          this.getLikeUsers(this.$route.params.id);
+        }
+      }
+    },
+
+    // 点击删除当前文章的回调
+    async deleteCurrentArticle() {
+      this.$confirm("确认要删除此文章吗?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(async () => {
+          let res = await this.$request(
+            `/dqarticle/delete/${this.$route.params.id}`
+          );
+          console.log(res);
+          if (res.data.code == 200) {
+            this.$router.replace("/community");
+          }
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除",
+          });
+        });
+    },
+  },
+  async created() {
+    await this.getArticalData(this.$route.params.id);
+    await this.getArticalComment(this.$route.params.id);
+    await this.getArticleLike(this.$route.params.id);
+    await this.getIsUserLike(this.$route.params.id);
+    await this.getLikeUsers(this.$route.params.id);
+  },
+
+  mounted() {
+    // 获取right的dom
+    let right = document.querySelector(".articleRight");
+    // 监听滚动
+    document.addEventListener("scroll", (e) => {
+      // console.log(window.scrollY);
+      // 这里的right.offsetTop 是算上顶部栏的，操作时要减去顶部栏
+      // console.log(right.offsetTop);
+      // 减去顶部栏 再减去顶部空间
+      if (
+        window.scrollY >= right.offsetTop - 94 &&
+        this.isRightFixed == false
+      ) {
+        this.isRightFixed = true;
+      } else if (
+        window.scrollY < right.offsetTop - 74 &&
+        this.isRightFixed == true
+      ) {
+        this.isRightFixed = false;
+      }
+    });
+  },
 };
 </script>
 
 <style scoped>
-.avatar {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-}
-
 .articleDetailContainer {
   display: flex;
   justify-content: center;
@@ -86,21 +279,41 @@ export default {
   padding: 40px 0;
 }
 
+.avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+}
+
 .left {
   flex: 1;
   padding: 0 30px;
 }
 
+.rightContainer {
+  width: 250px;
+  height: 500px;
+}
+
 .right {
   width: 250px;
   height: 500px;
-  background-color: pink;
-  writing-mode: vertical-lr;
+  background-color: white;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 50px;
   letter-spacing: 15px;
+  /* 文字竖直排列 */
+  writing-mode: vertical-lr;
+  box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.1);
+}
+
+.rightFixed {
+  position: fixed;
+  top: 94px;
+  /* 滚动条10px 居中左右两边各5px 所以这里还要减掉5px */
+  right: calc(7.5vw - 5px);
 }
 
 .title {
@@ -131,55 +344,92 @@ export default {
 
 .authorName {
   color: #4480c9;
+  width: 30px;
 }
 
 .publishDate {
   font-size: 13px;
   color: rgb(136, 136, 136);
+  position: relative;
+  flex: 1;
 }
 
-.content,
-.commentContent {
-  font-size: 15px;
-  color: #111;
-  line-height: 23px;
+.updateArtical {
+  position: absolute;
+  right: 0;
+  top: 0px;
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+  display: flex;
+}
+
+.updateArtical .fenge {
+  margin: 0 10px;
+  color: #ccc;
 }
 
 .content {
-  margin-bottom: 50px;
+  font-size: 15px;
+  color: #111;
+  line-height: 23px;
+  word-break: break-all;
+  margin-bottom: 20px;
 }
 
-.commentText {
-  font-size: 18px;
-  font-weight: 600;
-  color: rgb(44, 44, 44);
-  margin-bottom: 15px;
+.content .el-image {
+  margin-top: 20px;
 }
 
-.commentItem {
+.commentControl {
+  margin: 30px 0 50px;
   display: flex;
-  margin: 10px 0 30px;
+  position: relative;
 }
 
-.userAvatar {
-  width: 50px;
-  margin-right: 15px;
-}
-
-.userAvatar .avatar {
-  width: 45px;
-  height: 45px;
-}
-
-.userInfo {
-  margin: 8px 0;
-}
-
-.commentContent {
+.commentControlItem {
+  padding: 8px 15px;
+  background-color: #e5efff;
+  color: #0066ff;
+  cursor: pointer;
   font-size: 14px;
+  border-radius: 7px;
 }
 
-.contentImg {
-  margin: 20px 0;
+.commentControlItem:hover {
+  background-color: #d9e8ff;
+}
+
+.controlItemDone {
+  background-color: #0066ff;
+  color: white;
+}
+
+.controlItemDone:hover {
+  background-color: #0066ff;
+}
+
+.likeUsersAvatar {
+  position: absolute;
+  right: 0px;
+  width: 70px;
+}
+
+.likeUsersAvatar .el-image {
+  position: absolute;
+  right: 0;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+}
+
+.likeUsersAvatar .el-image:nth-child(2) {
+  z-index: -1;
+  right: 17.5px;
+}
+
+.likeUsersAvatar .el-image:nth-child(3) {
+  z-index: -2;
+  right: 35px;
 }
 </style>

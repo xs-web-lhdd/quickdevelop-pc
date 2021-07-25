@@ -17,15 +17,7 @@
       <div class="right">
         <!-- 搜索组件 -->
         <div class="user">
-          <div
-            class="avatar"
-            @click="
-              $router.push({
-                name: 'personal',
-                params: { id: userInfo.userId },
-              })
-            "
-          >
+          <div class="avatar" @click="gotoPersonal">
             <el-image
               :src="
                 userInfo.avatar
@@ -35,7 +27,7 @@
               fit="cover"
             ></el-image>
           </div>
-          <div class="userName">{{ userInfo.userName }}</div>
+          <div class="userName">{{ userInfo.nickName }}</div>
         </div>
       </div>
     </div>
@@ -66,11 +58,10 @@ export default {
     // 请求
     // 请求用户信息
     async getUserInfo() {
-      let res = await this.$request("/dquser/getnowuser", {
-        userName: window.localStorage.getItem("userName"),
-      });
+      let res = await this.$request("/dquser/getnowuser");
       // console.log(res);
       this.userInfo = res.data.data;
+      this.$store.commit("updateUserInfo", this.userInfo);
     },
 
     // 事件
@@ -81,6 +72,15 @@ export default {
         // 回到顶部
         window.scrollTo(0, 0);
       }
+    },
+
+    // 跳转至个人页面
+    gotoPersonal() {
+      if (this.$route.path == `/personal/${this.userInfo.userId}`) return;
+      this.$router.push({
+        name: "personal",
+        params: { id: this.userInfo.userId },
+      });
     },
   },
   created() {
@@ -112,6 +112,14 @@ export default {
   watch: {
     isAlphaChange(current) {
       this.backgroundAlpha = current ? 0 : 1;
+    },
+
+    // 监听是否需要重新获取用户信息
+    "$store.state.reFreshUserInfo"(current) {
+      if (current) {
+        this.getUserInfo();
+        this.$store.commit("updateReFreshUserInfo", false);
+      }
     },
   },
 };

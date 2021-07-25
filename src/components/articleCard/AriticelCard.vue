@@ -1,16 +1,23 @@
 <template>
   <div class="articleCard">
-    <div class="cardItem" v-for="(item, index) in articleList" :key="index">
-      <el-image
-        :src="
-          item.articleImage
-            ? '/articleImg' + item.articleImage.split('.com')[1]
-            : ''
-        "
-        lazy
-        fit="cover"
-        class="artileImage"
-      ></el-image>
+    <div
+      class="cardItem"
+      v-for="(item, index) in articleList"
+      :key="index"
+      @click="gotoArticle(item.articleId)"
+    >
+      <div class="articleImageContainer">
+        <el-image
+          :src="
+            item.articleImage
+              ? '/articleImg' + item.articleImage.split('.com')[1]
+              : ''
+          "
+          lazy
+          fit="cover"
+          class="artileImage"
+        ></el-image>
+      </div>
       <div class="text">
         <div class="title">{{ item.articleTitle }}</div>
         <div class="publishDate">
@@ -19,6 +26,9 @@
         <div class="content">
           {{ item.articleContent }}
         </div>
+      </div>
+      <div class="deleteBtn" @click.stop="deleteCurrentArticle(item.articleId)">
+        <i class="iconfont icon-shanchu1"></i>
       </div>
     </div>
   </div>
@@ -43,7 +53,36 @@ export default {
   data() {
     return {};
   },
-  methods: {},
+  methods: {
+    // 事件
+    // 点击articleItem的回调
+    gotoArticle(id) {
+      this.$router.push({ name: "article", params: { id } });
+      window.scrollTo(0, 0);
+    },
+
+    // 点击删除当前文章的回调
+    async deleteCurrentArticle(id) {
+      this.$confirm("确认要删除此文章吗?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(async () => {
+          let res = await this.$request(`/dqarticle/delete/${id}`);
+          console.log(res);
+          if (res.data.code == 200) {
+            this.$emit("reFreshArticleList");
+          }
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除",
+          });
+        });
+    },
+  },
 };
 </script>
 
@@ -51,25 +90,65 @@ export default {
 .articleCard {
   display: flex;
   flex-wrap: wrap;
+  width: 100%;
 }
 
 .cardItem {
-  width: 22vw;
+  position: relative;
+  width: 23.5%;
   height: 410px;
   margin-bottom: 30px;
   box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   overflow: hidden;
-  margin-right: 1vw;
+  margin-right: 2%;
   cursor: pointer;
+}
+
+.deleteBtn {
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  background-color: #ff1332;
+  color: #ffffff;
+  height: 0;
+  width: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  display: flex;
+  transition: all 0.4s ease;
+  box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.1);
+}
+
+.deleteBtn i {
+  font-size: 20px;
+}
+
+.cardItem:hover .deleteBtn {
+  top: 10px;
+  right: 10px;
+  height: 35px;
+  width: 35px;
 }
 
 .cardItem:nth-child(4n) {
   margin-right: 0;
 }
 
+.cardItem:hover .artileImage {
+  transform: scale(1.1);
+}
+
+.articleImageContainer {
+  height: 230px;
+  overflow: hidden;
+}
+
 .artileImage {
   height: 230px;
+  width: 100%;
+  transition: all 0.5s ease;
 }
 
 .text {
