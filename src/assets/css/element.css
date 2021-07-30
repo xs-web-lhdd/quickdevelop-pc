@@ -33,3 +33,19 @@
 .el-pagination.is-background .el-pager li:not(.disabled):hover {
   color: #2d68b1;
 }
+
+.el-dialog__body {
+  padding: 0 20px;
+}
+
+.el-dialog__wrapper {
+  z-index: 3100 !important;
+}
+
+.el-select-dropdown {
+  z-index: 4000 !important;
+}
+
+.el-message {
+  z-index: 5000 !important;
+}

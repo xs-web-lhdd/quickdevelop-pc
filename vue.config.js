@@ -13,12 +13,12 @@ module.exports = {
     },
     devServer: {
         proxy: {
-            '/api': {
+            '/forumApi': {
                 target: 'http://159.75.112.81:8080/',
                 changeOrigin: true,
                 ws: true,
                 pathRewrite: {
-                    '^/api': ''
+                    '^/forumApi': ''
                 }
             },
             '/articleImg': {

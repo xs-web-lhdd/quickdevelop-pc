@@ -8,7 +8,7 @@
               :src="
                 userInfo.avatar
                   ? '/articleImg' + userInfo.avatar.split('.com')[1]
-                  : ''
+                  : require('assets/img/defaultAvatar.jpg')
               "
               fit="cover"
             ></el-image>
@@ -16,14 +16,21 @@
           <div class="userInfo">
             <div class="userName">
               {{ userInfo.nickName }}
-              <div class="tag">Admin</div>
+              <div class="tag" v-if="userInfo.role != ''">
+                {{ userInfo.role }}
+              </div>
             </div>
             <div class="email">{{ userInfo.email }}</div>
           </div>
         </div>
         <div class="right">
-          <div>Posts: <span>30</span></div>
-          <div>Comments: <span>12</span></div>
+          <div @click="changeType('post')">
+            Posts: <span>{{ articleListData.total }}</span>
+          </div>
+          <div @click="changeType('comment')">
+            Comments:
+            <span>{{ commentData.total }}</span>
+          </div>
           <div>Views: <span>1.2k</span></div>
         </div>
         <!-- 用户信息操作栏 -->
@@ -31,6 +38,9 @@
           class="userInfoControl"
           v-if="$store.state.userInfo.userId == $route.params.id"
         >
+          <div class="userInfoControlItem add" @click="isWriteCardShow = true">
+            <i class="iconfont icon-tianjiajiahaowubiankuang"></i>
+          </div>
           <div class="userInfoControlItem edit" @click="editUserInfo">
             <i class="iconfont icon-bianji1"></i>
           </div>
@@ -39,20 +49,57 @@
           </div>
         </div>
       </div>
-      <ariticel-card
-        :articleList="articleList"
-        @reFreshArticleList="getArticleById($route.params.id)"
-      ></ariticel-card>
+      <div class="articleCardContainer" v-loading="isDataLoad">
+        <!-- 文章组件 -->
+        <article-card
+          v-if="$route.query.type == 'post'"
+          class="articleCard"
+          :articleList="articleListData && articleListData.list"
+          @reFreshArticleList="getArticleById($route.params.id)"
+          @addArticle="isWriteCardShow = true"
+        ></article-card>
+        <!-- 评论组件 -->
+        <comment-list-card
+          v-else-if="$route.query.type == 'comment'"
+          :commentList="commentData.list"
+          @reFreshCommentList="getCommentData($route.params.id)"
+        ></comment-list-card>
+        <!-- 底部 -->
+        <div class="bottom" v-if="!isDataLoad">
+          <!-- 分页组件 -->
+          <el-pagination
+            background
+            layout="prev, pager, next"
+            :total="
+              $route.query.type == 'post'
+                ? articleListData
+                  ? articleListData.total
+                  : 1
+                : commentData
+                ? commentData.total
+                : 1
+            "
+            :page-size="$route.query.type == 'post' ? 7 : 16"
+            :current-page="$route.query.page * 1"
+            @current-change="changePage"
+          >
+          </el-pagination>
+        </div>
+      </div>
     </div>
     <!-- 返回顶部组件 -->
     <go-top></go-top>
 
     <!-- 编辑用户信息的dialog -->
-    <el-dialog title="编辑用户信息" :visible.sync="isEditDialogShow">
+    <el-dialog
+      title="编辑用户信息"
+      :visible.sync="isEditDialogShow"
+      top="calc(50vh - 250px)"
+    >
       <div class="dialogInputItem">
         <div class="inputTitle">用户名:</div>
         <el-input
-          v-model="editUserData.username"
+          v-model="editUserData.userName"
           autocomplete="off"
           size="small"
         ></el-input>
@@ -60,7 +107,7 @@
       <div class="dialogInputItem">
         <div class="inputTitle">昵称:</div>
         <el-input
-          v-model="editUserData.nickname"
+          v-model="editUserData.nickName"
           autocomplete="off"
           size="small"
         ></el-input>
@@ -76,7 +123,7 @@
       <div class="dialogInputItem">
         <div class="inputTitle">手机号码:</div>
         <el-input
-          v-model="editUserData.phonenumber"
+          v-model="editUserData.phoneNumber"
           autocomplete="off"
           size="small"
         ></el-input>
@@ -97,14 +144,14 @@
           size="small"
         ></el-input>
       </div>
-      <div class="dialogInputItem">
+      <!-- <div class="dialogInputItem">
         <div class="inputTitle">密码:</div>
         <el-input
           v-model="editUserData.password"
           autocomplete="off"
           size="small"
         ></el-input>
-      </div>
+      </div> -->
       <div class="dialogInputItem">
         <div class="inputTitle">个性签名:</div>
         <el-input
@@ -122,34 +169,49 @@
         >
       </div>
     </el-dialog>
+
+    <!-- 添加文章组件 -->
+    <write-card
+      :isCardShow="isWriteCardShow"
+      @reFreshArticleList="changePage($route.query.page)"
+      @closeCard="isWriteCardShow = false"
+    ></write-card>
   </div>
 </template>
 
 <script>
-import AriticelCard from "components/articleCard/AriticelCard.vue";
+import ArticleCard from "components/articleCard/ArticleCard.vue";
 import GoTop from "components/goTop/GoTop.vue";
+import WriteCard from "components/writeCard/WriteCard.vue";
+import CommentListCard from "../components/commentListCard/CommentListCard.vue";
 export default {
-  components: { AriticelCard, GoTop },
+  components: { ArticleCard, GoTop, WriteCard, CommentListCard },
   name: "personal",
   data() {
     return {
       // 用户信息
       userInfo: {},
-      // 文章列表
-      articleList: [],
+      // 文章列表数据
+      articleListData: {},
       // 编辑用户信息
       editUserData: {
-        username: "",
-        nickname: "",
+        userId: this.$route.params.id,
+        userName: "",
+        nickName: "",
         email: "",
-        phonenumber: "",
+        phoneNumber: "",
         sex: "",
         avatar: "",
-        password: "",
         signature: "",
       },
       // 是否显示编辑用户的dialog
       isEditDialogShow: false,
+      // 是否正在加载中
+      isDataLoad: false,
+      // 是否显示添加文章组件
+      isWriteCardShow: false,
+      // 该用户的所有评论数据
+      commentData: {},
     };
   },
   methods: {
@@ -163,16 +225,21 @@ export default {
 
     // 根据id查询文章
     async getArticleById(id) {
-      let res = await this.$request(`/dqarticle/author/${id}`);
+      this.isDataLoad = true;
+      let res = await this.$request(`/dqarticle/author/${id}`, {
+        pageNum: this.$route.query.page,
+        pageSize: 7,
+      });
       console.log(res);
+      this.isDataLoad = false;
       // this.articleList = res.data.data;
-      this.articleList = res.data.data;
+      this.articleListData = res.data.data;
     },
 
     // 确认修改用户信息
     async commitEdit() {
       let res = await this.$request(
-        `/dquser/update/${this.userInfo.userId}`,
+        `/dquser/update`,
         this.editUserData,
         "post"
       );
@@ -183,6 +250,16 @@ export default {
         this.getUserInfoById(this.$route.params.id);
         this.$store.commit("updateReFreshUserInfo", true);
       }
+    },
+
+    // 请求当前用户的所有评论数据
+    async getCommentData(id) {
+      let res = await this.$request(`/dqcomment/dquser/${id}`, {
+        pageNum: this.$route.query.page,
+        pageSize: 16,
+      });
+      console.log(res);
+      this.commentData = res.data.data;
     },
 
     // 事件
@@ -198,21 +275,67 @@ export default {
 
     // 点击编辑用户的回调
     editUserInfo() {
-      // 这里不深拷贝 因为userInfo是驼峰 而更新用户的接口不是
+      // 这里不深拷贝 因为editUserData没有password 两者不是完全一样的
       // Object.keys() 方法会返回一个由一个给定对象的自身可枚举属性组成的数组，数组中属性名的排列顺序和正常循环遍历该对象时返回的顺序一致
       Object.keys(this.editUserData).forEach((key) => {
         this.editUserData[key] = this.userInfo[key];
       });
-      this.editUserData.username = this.userInfo.userName;
-      this.editUserData.nickname = this.userInfo.nickName;
 
       this.isEditDialogShow = true;
+    },
+
+    // 切换分页的回调
+    async changePage(e) {
+      // this.currentPage = e;
+      // console.log(e);
+      // 滚动到card的offsettop
+      this.$router.push({
+        name: "personal",
+        params: { id: this.$route.params.id },
+        query: { type: this.$route.query.type, page: e },
+      });
+
+      let top;
+
+      if (this.$route.query.type == "post") {
+        let articleCard = document.querySelector(".articleCard");
+        top = articleCard.offsetTop - 94;
+
+        await this.getArticleById(this.$route.params.id);
+      } else if (this.$route.query.type == "comment") {
+        let commentListCard = document.querySelector(".commentListCard");
+        top = commentListCard.offsetTop - 94;
+
+        await this.getCommentData(this.$route.params.id);
+      }
+
+      window.scrollTo({
+        top,
+        behavior: "smooth",
+      });
+    },
+
+    // 点击切换分类的回调
+    changeType(type) {
+      this.$router.push({
+        name: "personal",
+        params: { id: this.$route.params.id },
+        query: { type, page: 1 },
+      });
+
+      // 重新获取列表数据
+      if (this.$route.query.type == "post") {
+        this.getArticleById(this.$route.params.id);
+      } else if (this.$route.query.type == "comment") {
+        this.getCommentData(this.$route.params.id);
+      }
     },
   },
   created() {
     window.scrollTo(0, 0);
     this.getUserInfoById(this.$route.params.id);
     this.getArticleById(this.$route.params.id);
+    this.getCommentData(this.$route.params.id);
   },
 };
 </script>
@@ -275,6 +398,7 @@ export default {
 
 .right > div {
   margin-left: 30px;
+  cursor: pointer;
 }
 
 .right div span {
@@ -292,7 +416,7 @@ export default {
 .tag {
   font-size: 12px;
   position: absolute;
-  right: -60px;
+  right: -85px;
   top: 4px;
   background-color: #ffde66;
   color: #d50101;
@@ -336,6 +460,10 @@ export default {
   background-color: #2962ff;
 }
 
+.add {
+  background-color: #fdce02;
+}
+
 .dialogInputItem {
   display: flex;
   align-items: center;
@@ -344,5 +472,24 @@ export default {
 
 .inputTitle {
   width: 100px;
+}
+
+.bottom {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 50px;
+}
+
+.personal /deep/ .el-loading-spinner {
+  margin-top: 0px;
+  top: 20%;
+}
+
+.tips {
+  margin: 60px 0;
+  font-size: 14px;
+  color: rgb(133, 133, 133);
+  text-align: center;
 }
 </style>

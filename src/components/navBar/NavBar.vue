@@ -8,7 +8,10 @@
         <div class="logo"><img src="~assets/img/logo.png" alt="" /></div>
         <div class="nav">
           <div class="navItem" @click="goCurrentPage('/home')">Home</div>
-          <div class="navItem" @click="goCurrentPage('/community')">
+          <div
+            class="navItem"
+            @click="goCurrentPage('/community?typeId=0&page=1')"
+          >
             Community
           </div>
           <div class="navItem" @click="goCurrentPage('/blogs')">Blogs</div>
@@ -22,7 +25,7 @@
               :src="
                 userInfo.avatar
                   ? '/articleImg' + userInfo.avatar.split('.com')[1]
-                  : ''
+                  : require('assets/img/defaultAvatar.jpg')
               "
               fit="cover"
             ></el-image>
@@ -58,8 +61,22 @@ export default {
     // 请求
     // 请求用户信息
     async getUserInfo() {
+      // 判断是否有token 没有token则不获取用户信息
+      if (!window.localStorage.getItem("tokenValue")) {
+        return;
+      }
+
       let res = await this.$request("/dquser/getnowuser");
       // console.log(res);
+      // 判断token是否过期或失效
+      if (res.data.code != 200) {
+        // 如果过期或失效 清空token 并return
+        window.localStorage.removeItem("tokenValue");
+        this.$store.commit("updateUserInfo", {});
+        this.$message.info("登录信息失效, 请重新登录!");
+        return;
+      }
+
       this.userInfo = res.data.data;
       this.$store.commit("updateUserInfo", this.userInfo);
     },
@@ -76,10 +93,18 @@ export default {
 
     // 跳转至个人页面
     gotoPersonal() {
+      // 判断是否登录
+      if (!window.localStorage.getItem("tokenValue")) {
+        // 跳转至登录界面
+        this.$router.push("/login");
+        return;
+      }
+
       if (this.$route.path == `/personal/${this.userInfo.userId}`) return;
       this.$router.push({
         name: "personal",
         params: { id: this.userInfo.userId },
+        query: { type: "post", page: 1 },
       });
     },
   },
@@ -134,7 +159,7 @@ export default {
   justify-content: space-between;
   background-color: rgba(24, 54, 91);
   width: 100%;
-  z-index: 1000;
+  z-index: 3000;
   height: 74px;
 }
 

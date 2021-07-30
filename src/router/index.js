@@ -20,7 +20,7 @@ const routes = [
     children: [
       { path: '/home', component: Home },
       { path: '/blogs', component: Blogs },
-      { path: '/community', component: Community },
+      { path: '/community', name: "community", component: Community },
       { path: '/article/:id', name: 'article', component: ArticleDetail },
       { path: '/personal/:id', name: 'personal', component: Personal },
     ]
@@ -36,9 +36,9 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.path === '/login') return next();
-  // 获取token
-  const tokenStr = window.localStorage.getItem("tokenValue")
-  if (!tokenStr) return next('/login')
+  // 如果没有token则直接返回登录界面
+  // const tokenStr = window.localStorage.getItem("tokenValue")
+  // if (!tokenStr) return next('/login')
   next()
 })
 

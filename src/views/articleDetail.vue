@@ -3,7 +3,7 @@
     <div class="articleDetail">
       <div class="left">
         <div class="title">
-          {{ articalData.articleTitle }}
+          {{ articleData.articleTitle }}
         </div>
         <!-- 用户信息 -->
         <div class="author">
@@ -14,14 +14,17 @@
               alt=""
               lazy
               fit="cover"
+              @click="gotoPersonal(articleData.autorId)"
             />
           </div>
-          <div class="authorName">{{ articalData.authorNickname }}</div>
+          <div class="authorName" @click="gotoPersonal(articleData.autorId)">
+            {{ articleData.authorNickname }}
+          </div>
           <div class="publishDate">
-            {{ articalData.createTime }}
+            {{ articleData.createTime }}
             <div
-              class="updateArtical"
-              v-if="articalData.autorId == $store.state.userInfo.userId"
+              class="updatearticle"
+              v-if="articleData.autorId == $store.state.userInfo.userId"
             >
               <div @click="isWriteCardShow = true">更新文章</div>
               <div class="fenge">|</div>
@@ -30,10 +33,8 @@
           </div>
         </div>
         <!-- 文章内容 -->
-        <div class="content">
-          {{ articalData.articleContent }}
-          <el-image :src="require('assets/img/test.jpg')" class="contentImg" />
-        </div>
+        <div class="content" v-html="handleMarkDown"></div>
+        <el-image :src="require('assets/img/test.jpg')" class="contentImg" />
         <div class="commentControl">
           <div
             class="commentControlItem"
@@ -41,19 +42,16 @@
             @click="likeCurrentArticle(!isUserLike)"
           >
             <i class="iconfont icon-dianzan"></i>
-            {{ isUserLike ? "已点赞" : "点赞" }}
+            {{ (isUserLike ? "已点赞" : "点赞") + "  " + this.likeCount }}
           </div>
           <div class="likeUsersAvatar">
             <el-image
-              v-for="(item, index) in likeUserList.length > 3
-                ? likeUserList.slice(
-                    likeUserList.length - 3,
-                    likeUserList.length
-                  )
-                : likeUserList"
+              v-for="(item, index) in likeUserList"
               :key="index"
               :src="
-                item.avatar ? '/articleImg' + item.avatar.split('.com')[1] : ''
+                item.avatar && item.avatar.split('.com')[1]
+                  ? '/articleImg' + item.avatar.split('.com')[1]
+                  : require('assets/img/defaultAvatar.jpg')
               "
               fit="cover"
             ></el-image>
@@ -61,10 +59,12 @@
         </div>
         <!-- 评论区 -->
         <comment-area
-          :commentList="commentList"
+          :commentData="commentData"
           :floorCommentList="floorCommentList"
+          :currentPage="currentCommentPage"
           @reFreshComment="({ type, index }) => reFreshComment(type, index)"
           @getFloorCommentList="({ id, index }) => getFloorComment(id, index)"
+          @changePage="changeCommentPage"
         ></comment-area>
       </div>
       <div class="rightContainer">
@@ -80,15 +80,17 @@
     <!-- 编辑组件 -->
     <write-card
       :isCardShow="isWriteCardShow"
-      :originArticle="articalData"
+      :originArticle="articleData"
       @closeCard="isWriteCardShow = false"
-      @reFreshArticalList="getArticalData($route.params.id)"
+      @reFreshArticleList="getarticleData($route.params.id)"
     ></write-card>
     <go-top></go-top>
   </div>
 </template>
 
 <script>
+import MarkDownIt from "markdown-it";
+
 import CommentArea from "../components/commentArea/CommentArea.vue";
 import GoTop from "../components/goTop/GoTop.vue";
 import WriteCard from "../components/writeCard/WriteCard.vue";
@@ -105,9 +107,9 @@ export default {
       // right是否改为固定定位
       isRightFixed: false,
       // 文章数据
-      articalData: {},
+      articleData: {},
       // 评论数据
-      commentList: [],
+      commentData: {},
       // 楼层评论数据
       floorCommentList: [],
       // 当前用户是否点赞了该文章
@@ -118,40 +120,51 @@ export default {
       likeUserList: [],
       // 是否显示编辑组件
       isWriteCardShow: false,
+      // 当前评论页数
+      currentCommentPage: 1,
     };
   },
   methods: {
     // 请求
     // 请求文章数据
-    async getArticalData(id) {
+    async getarticleData(id) {
       let res = await this.$request(`/dqarticle/${id}`);
       // console.log(res);
-      this.articalData = res.data.data;
+      this.articleData = res.data.data;
     },
 
     // 获取文章的点赞数
     async getArticleLike(id) {
       let res = await this.$request(`/dqlike/getlikes/${id}`);
-      console.log(res);
+      // console.log(res);
+      this.likeCount = res.data.data;
     },
 
     // 获取当前用户的点赞状态
     async getIsUserLike(id) {
+      if (!window.localStorage.getItem("tokenValue")) return;
+
       let res = await this.$request(`/dqlike/status/${id}`);
       // console.log(res);
       this.isUserLike = res.data.data == 1;
     },
 
-    // 请求文章的所有评论
-    async getArticalComment(id) {
-      let res = await this.$request(`/dqcomment/dqarticle/${id}`);
-      // console.log(res);
+    // 请求文章的所有根评论
+    async getarticleComment(id) {
+      let res = await this.$request(`/dqcomment/dqarticle/${id}`, {
+        pageSize: 20,
+        pageNum: this.currentCommentPage,
+      });
+      console.log(res);
       if (res.data.code == 200) {
         res.data.data.list.forEach((item, index, arr) => {
           arr[index].floorCommentList = [];
         });
 
-        this.commentList = res.data.data.list;
+        this.commentData = res.data.data;
+      } else if (res.data.code == 404) {
+        // 文章数据为空
+        this.commentData = {};
       }
     },
 
@@ -161,21 +174,21 @@ export default {
       // console.log(res);
       // this.floorCommentList = res.data.data.list;
       if (res.data.code == 200) {
-        this.commentList[index].floorCommentList = res.data.data.list;
+        this.commentData.list[index].floorCommentList = res.data.data.list;
       } else {
         // 随便往数组添加个数
-        this.commentList[index].floorCommentList.push(1);
+        this.commentData.list[index].floorCommentList.push(1);
         this.$message.warning("此评论暂无回复哦!");
       }
     },
 
     // 请求点赞指定文章的所有用户
     async getLikeUsers(id) {
-      let res = await this.$request(`/dqlike/getlikeusers/${id}`);
+      let res = await this.$request(`/dqlike/getlikeusers/${id}?pageSize=3`);
       // console.log(res);
 
       if (res.data.code == 200) {
-        this.likeUserList = res.data.data;
+        this.likeUserList = res.data.data.list;
       } else if (res.data.code == 404) {
         this.likeUserList = [];
       }
@@ -185,26 +198,40 @@ export default {
     // 更新评论数据
     reFreshComment(type, index) {
       if (type == 1) {
-        this.getArticalComment(this.$route.params.id);
+        this.getarticleComment(this.$route.params.id);
       } else if (type == 2) {
         // console.log(index);
-        this.getFloorComment(this.commentList[index].commentId, index);
+        this.getFloorComment(this.commentData.list[index].commentId, index);
       }
     },
 
     // 点击喜欢文章的回调
     async likeCurrentArticle(flag) {
       if (flag) {
+        // 判断是否登录
+        if (!window.localStorage.getItem("tokenValue")) {
+          this.$message.info("登录后才能为该文章点赞哦!");
+          return;
+        }
         let res = await this.$request(`dqlike/like/${this.$route.params.id}`);
+        // console.log(res);
         if (res.data.code == 200) {
           this.isUserLike = flag;
           this.getLikeUsers(this.$route.params.id);
+          this.getArticleLike(this.$route.params.id);
+        } else if (res.data.data == "登陆无效") {
+          // token失效了 清空token 和 vuex中的用户信息
+          window.localStorage.removeItem("tokenValue");
+          this.$store.commit("updateUserInfo", {});
+          this.$message.info("登录失效,请重新登录后重试!");
+          return;
         }
       } else {
         let res = await this.$request(`dqlike/unlike/${this.$route.params.id}`);
         if (res.data.code == 200) {
           this.isUserLike = flag;
           this.getLikeUsers(this.$route.params.id);
+          this.getArticleLike(this.$route.params.id);
         }
       }
     },
@@ -220,7 +247,7 @@ export default {
           let res = await this.$request(
             `/dqarticle/delete/${this.$route.params.id}`
           );
-          console.log(res);
+          // console.log(res);
           if (res.data.code == 200) {
             this.$router.replace("/community");
           }
@@ -232,10 +259,31 @@ export default {
           });
         });
     },
+
+    // 跳转至个人主页
+    gotoPersonal(id) {
+      this.$router.push({ name: "personal", params: { id } });
+    },
+
+    // 分页的回调
+    changeCommentPage(e) {
+      this.currentCommentPage = e;
+      this.getarticleComment(this.$route.params.id);
+    },
   },
+
+  computed: {
+    handleMarkDown() {
+      if (!this.articleData.articleContent) return;
+      const md = new MarkDownIt();
+      const result = md.render(this.articleData.articleContent);
+      return result;
+    },
+  },
+
   async created() {
-    await this.getArticalData(this.$route.params.id);
-    await this.getArticalComment(this.$route.params.id);
+    await this.getarticleData(this.$route.params.id);
+    await this.getarticleComment(this.$route.params.id);
     await this.getArticleLike(this.$route.params.id);
     await this.getIsUserLike(this.$route.params.id);
     await this.getLikeUsers(this.$route.params.id);
@@ -283,6 +331,7 @@ export default {
   width: 35px;
   height: 35px;
   border-radius: 50%;
+  cursor: pointer;
 }
 
 .left {
@@ -338,13 +387,10 @@ export default {
   margin-bottom: 20px;
 }
 
-.author > div {
-  margin-right: 10px;
-}
-
 .authorName {
   color: #4480c9;
-  width: 30px;
+  cursor: pointer;
+  margin: 0 20px 0 10px;
 }
 
 .publishDate {
@@ -354,7 +400,7 @@ export default {
   flex: 1;
 }
 
-.updateArtical {
+.updatearticle {
   position: absolute;
   right: 0;
   top: 0px;
@@ -364,7 +410,7 @@ export default {
   display: flex;
 }
 
-.updateArtical .fenge {
+.updatearticle .fenge {
   margin: 0 10px;
   color: #ccc;
 }

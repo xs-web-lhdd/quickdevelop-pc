@@ -1,5 +1,19 @@
 <template>
   <div class="articleCard">
+    <!-- 添加 -->
+    <div
+      class="cardItem addItem"
+      @click="$emit('addArticle')"
+      v-if="$route.params.id == $store.state.userInfo.userId"
+    >
+      <div class="articleImageContainer addItemImgContainer">
+        <i class="iconfont icon-tianjiajiahaowubiankuang"></i>
+      </div>
+      <div class="text">
+        <div class="content addContent">点击添加文章</div>
+      </div>
+    </div>
+    <!-- 文章 -->
     <div
       class="cardItem"
       v-for="(item, index) in articleList"
@@ -10,7 +24,7 @@
         <el-image
           :src="
             item.articleImage
-              ? '/articleImg' + item.articleImage.split('.com')[1]
+              ? '/imgreq' + item.articleImage.split('.com')[1]
               : ''
           "
           lazy
@@ -27,7 +41,11 @@
           {{ item.articleContent }}
         </div>
       </div>
-      <div class="deleteBtn" @click.stop="deleteCurrentArticle(item.articleId)">
+      <div
+        class="deleteBtn"
+        @click.stop="deleteCurrentArticle(item.articleId)"
+        v-if="$store.state.userInfo.userId == $route.params.id"
+      >
         <i class="iconfont icon-shanchu1"></i>
       </div>
     </div>
@@ -106,11 +124,11 @@ export default {
 }
 
 .deleteBtn {
+  background-color: #ff1332;
+  color: #ffffff;
   position: absolute;
   right: -40px;
   top: -40px;
-  background-color: #ff1332;
-  color: #ffffff;
   height: 0;
   width: 0;
   align-items: center;
@@ -183,5 +201,28 @@ export default {
   -webkit-line-clamp: 3;
   line-clamp: 3;
   -webkit-box-orient: vertical;
+}
+
+.addItemImgContainer {
+  background-color: #f5f7fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.addItemImgContainer .iconfont {
+  font-size: 100px;
+  font-weight: bold;
+  color: #c4c7cf;
+  transition: all 0.4s ease;
+}
+
+.cardItem:hover .iconfont {
+  transform: scale(1.1);
+}
+
+.addContent {
+  text-align: center;
+  margin-top: 30px;
 }
 </style>

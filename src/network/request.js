@@ -4,7 +4,7 @@ import axios from 'axios'
 export function request(url, params, type) {
     // 请求超过30秒则判定为超时
     const instance = axios.create({
-        baseURL: '/api',
+        baseURL: '/forumApi',
         timeout: 30000,
         withCredentials: true,
     });

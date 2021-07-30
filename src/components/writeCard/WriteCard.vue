@@ -64,15 +64,24 @@
           />
         </div>
         <div class="contentContainer">
-          <textarea
-            class="content"
-            placeholder="说点什么吧"
-            v-model="newArticleData.articleContent"
-          ></textarea>
-          <el-image
-            :src="'/imgreq' + newArticleData.articleImage.split('.com')[1]"
-            fit="contain"
-          ></el-image>
+          <div class="contentInput">
+            <textarea
+              class="content"
+              placeholder="说点什么吧"
+              v-model="newArticleData.articleContent"
+            ></textarea>
+            <!-- <el-image
+              :src="'/imgreq' + newArticleData.articleImage.split('.com')[1]"
+              fit="contain"
+              class="articleCover"
+            ></el-image> -->
+          </div>
+          <!-- markdown展示框 -->
+          <div
+            class="mdLive"
+            :class="isMdLiveShow ? 'mdLiveShow' : 'mdLiveHide'"
+            v-html="handleMarkDown"
+          ></div>
         </div>
       </div>
     </div>
@@ -81,11 +90,22 @@
       <el-button type="primary" size="medium" @click="addArticle"
         >发布</el-button
       >
+      <div class="bottomBtnContainer">
+        <div class="bottomBtn">
+          <i class="iconfont icon-tupian"></i>
+        </div>
+        <div class="bottomBtn">上传封面</div>
+        <div class="bottomBtn" @click="isMdLiveShow = !isMdLiveShow">
+          {{ isMdLiveShow ? "关闭" : "打开" }}md效果预览
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import MarkDownIt from "markdown-it";
+
 export default {
   name: "writeCard",
   props: {
@@ -127,6 +147,8 @@ export default {
       },
       // 文章分类
       articleType: [],
+      // 是否实时显示markdown效果
+      isMdLiveShow: false,
     };
   },
   methods: {
@@ -178,9 +200,15 @@ export default {
       console.log(res);
       if (res.data.code == 200) {
         // 让父组件更新数据
-        this.$emit("reFreshArticalList");
+        this.$emit("reFreshArticleList");
         // 关闭当前组件
         this.closeCard();
+      } else if (res.data.data == "登陆无效") {
+        // token失效了 清空token 和 vuex中的用户信息
+        window.localStorage.removeItem("tokenValue");
+        this.$store.commit("updateUserInfo", {});
+        this.$message.info("登录失效,请重新登录后重试!");
+        return;
       }
     },
 
@@ -204,12 +232,13 @@ export default {
       // 重置所有数据
       this.isEnlarge = false;
       this.isMinimize = false;
+      this.isMdLiveShow = false;
       if (!this.originArticle.articleId) {
         this.newArticleData = {
           typeId: null,
           articletitle: "",
           articlecontent: "",
-          articleimage:
+          articleImage:
             "https://chen110.oss-cn-guangzhou.aliyuncs.com/2021/07/10/jisoo.png",
         };
       } else {
@@ -238,6 +267,17 @@ export default {
       }
     },
   },
+
+  computed: {
+    handleMarkDown() {
+      if (this.isMdLiveShow) {
+        const md = new MarkDownIt();
+        const result = md.render(this.newArticleData.articleContent);
+
+        return `<div class="mdTips">md效果预览:</div>` + result;
+      }
+    },
+  },
 };
 </script>
 
@@ -245,7 +285,7 @@ export default {
 .writeCard {
   background-color: white;
   position: fixed;
-  z-index: 2000;
+  z-index: 3100;
   left: calc(50vw - 435px);
   bottom: -300px;
   height: 300px;
@@ -337,12 +377,17 @@ export default {
 .title {
   font-size: 16px;
   letter-spacing: 1px;
+  width: calc(100% - 180px);
 }
 
 .contentContainer {
   display: flex;
-  width: 100%;
-  height: 100%;
+  height: 80%;
+}
+
+.contentInput {
+  position: relative;
+  flex: 1;
 }
 
 .content {
@@ -350,7 +395,7 @@ export default {
   letter-spacing: 0.8px;
   resize: none;
   height: calc(100% - 30px);
-  flex: 1;
+  width: 100%;
   font-size: 15px;
 }
 
@@ -367,6 +412,10 @@ export default {
   width: 100%;
   border-top: 1px solid #ddd;
   padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
 }
 
 .el-select {
@@ -382,5 +431,43 @@ export default {
 
 .el-select-dropdown__item.selected {
   color: #355a86;
+}
+
+.articleCover {
+  position: absolute;
+  right: 5%;
+  bottom: 0;
+}
+
+.mdLive {
+  height: 100%;
+  transition: all 0.5s ease;
+  border-left: 1px solid #ddd;
+  margin-left: 10px;
+}
+
+.mdLiveHide {
+  position: relative;
+  left: 35px;
+}
+
+.mdLiveShow {
+  flex: 1;
+  box-sizing: border-box;
+  padding-left: 15px;
+  overflow: scroll;
+}
+
+.bottomBtn {
+  font-size: 13px;
+  color: rgb(122, 122, 122);
+  cursor: pointer;
+  margin: 0 10px;
+  user-select: none;
+}
+
+.bottomBtnContainer {
+  display: flex;
+  align-items: center;
 }
 </style>

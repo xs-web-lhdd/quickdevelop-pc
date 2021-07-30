@@ -19,13 +19,13 @@
               <el-form ref="form" :model="login" label-width="80px">
                 <el-form-item>
                   <el-input
-                    v-model="login.username"
+                    v-model="login.userName"
                     placeholder="请输入用户名"
                   ></el-input>
                 </el-form-item>
                 <el-form-item>
                   <el-input
-                    v-model="login.password"
+                    v-model="login.passWord"
                     type="password"
                     placeholder="请输入密码"
                   ></el-input>
@@ -41,13 +41,13 @@
               <el-form ref="form" :model="login" label-width="80px">
                 <el-form-item>
                   <el-input
-                    v-model="registered.username"
+                    v-model="registered.userName"
                     placeholder="请输入用户名"
                   ></el-input>
                 </el-form-item>
                 <el-form-item>
                   <el-input
-                    v-model="registered.password"
+                    v-model="registered.passWord"
                     placeholder="请输入密码"
                     type="password"
                   ></el-input>
@@ -60,7 +60,7 @@
                 </el-form-item>
                 <el-form-item>
                   <el-input
-                    v-model="registered.phonenumber"
+                    v-model="registered.phoneNumber"
                     placeholder="请输入手机号码"
                   ></el-input>
                 </el-form-item>
@@ -84,14 +84,14 @@ export default {
   data() {
     return {
       login: {
-        username: "maoyan",
-        password: "123456",
+        userName: "maoyan",
+        passWord: "123456",
       },
       registered: {
-        phonenumber: "",
-        password: "",
-        username: "",
-        phonenumber: "",
+        phoneNumber: "",
+        passWord: "",
+        userName: "",
+        email: "",
       },
       activeName: "first",
     };
@@ -109,7 +109,7 @@ export default {
         // 将tokenName和tokenValue 以及用户信息保存至本地
         // window.localStorage.setItem("tokenName", res.data.data.tokenName);
         window.localStorage.setItem("tokenValue", res.data.data.tokenValue);
-        window.localStorage.setItem("userName", this.login.username);
+        window.localStorage.setItem("userName", this.login.userName);
 
         //   跳转至主界面
         this.$router.push("/index");
@@ -129,14 +129,16 @@ export default {
       // 如果注册成功，清空所有数据并跳转至登录界面，自动填写手机号码
       if (res.data.code == 200) {
         this.$message.success("注册成功!");
-        this.login.username = this.registered.username;
+        this.login.userName = this.registered.userName;
         this.activeName = "first";
         this.registered = {
-          phonenumber: "",
-          password: "",
-          username: "",
-          phonenumber: "",
+          phoneNumber: "",
+          passWord: "",
+          userName: "",
+          email: "",
         };
+      } else if (res.data.code == 500) {
+        this.$message.error(res.data.msg);
       } else {
         this.$message.error("注册失败,请稍后重试!");
       }

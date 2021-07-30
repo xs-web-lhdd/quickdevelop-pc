@@ -1,32 +1,32 @@
 <template>
   <div class="communityContainer">
     <div class="community">
-      <div class="left">
-        <div class="write">
-          <el-button
-            type="primary"
-            class="writeButton"
-            @click="isWriteCardShow = true"
-          >
-            写文章</el-button
-          >
-        </div>
-        <div class="sort">
-          <div
-            class="sortItem"
-            :class="currentTypeId == 0 ? 'currentItem' : ''"
-            @click="changeType(0)"
-          >
-            <i class="iconfont icon-xiaoxi"></i>&nbsp;&nbsp;所有文章
+      <div class="leftContainer">
+        <div class="left">
+          <div class="write">
+            <el-button type="primary" class="writeButton" @click="writeArticle">
+              写文章</el-button
+            >
           </div>
-          <div
-            class="sortItem"
-            :class="currentTypeId == item.typeId ? 'currentItem' : ''"
-            v-for="(item, index) in allType"
-            :key="index"
-            @click="changeType(item.typeId)"
-          >
-            <i class="iconfont icon-xiaoxi"></i>&nbsp;&nbsp;{{ item.typeName }}
+          <div class="sort">
+            <div
+              class="sortItem"
+              :class="$route.query.typeId == 0 ? 'currentItem' : ''"
+              @click="changeType(0)"
+            >
+              <i class="iconfont icon-xiaoxi"></i>&nbsp;&nbsp;所有文章
+            </div>
+            <div
+              class="sortItem"
+              :class="$route.query.typeId == item.typeId ? 'currentItem' : ''"
+              v-for="(item, index) in allType"
+              :key="index"
+              @click="changeType(item.typeId)"
+            >
+              <i class="iconfont icon-xiaoxi"></i>&nbsp;&nbsp;{{
+                item.typeName
+              }}
+            </div>
           </div>
         </div>
       </div>
@@ -59,7 +59,7 @@
               <div class="articleImg">
                 <el-image
                   v-if="item.articleImage != ''"
-                  :src="'/articleImg' + item.articleImage.split('.com')[1]"
+                  :src="'/imgreq' + item.articleImage.split('.com')[1]"
                   class="articleImgItem"
                   fit="contain"
                   lazy
@@ -80,17 +80,18 @@
             background
             layout="prev, pager, next"
             :total="totalCount"
-            :current-page="currentPage"
+            :current-page="this.$route.query.page * 1"
+            @current-change="changePage"
           >
           </el-pagination>
         </div>
       </div>
     </div>
 
-    <!-- 写文章组件 -->
+    <!-- 添加文章组件 -->
     <write-card
       :isCardShow="isWriteCardShow"
-      @reFreshArticalList="reFreshArticalList"
+      @reFreshArticleList="reFreshArticleList"
       @closeCard="isWriteCardShow = false"
     ></write-card>
 
@@ -115,12 +116,8 @@ export default {
       imgArr: [],
       // 文章数据
       articleList: [],
-      // 当前页数
-      currentPage: 1,
       // 所有分类
       allType: [],
-      // 当前分类 Id 0代表所有文章
-      currentTypeId: 0,
       // 是否显示写文章组件
       isWriteCardShow: false,
       // 总条数
@@ -135,7 +132,7 @@ export default {
     async getAllArticle() {
       this.isDataLoad = true;
       let res = await this.$request("/dqarticle/list", {
-        pageNum: this.currentPage,
+        pageNum: this.$route.query.page,
         pageSize: 10,
       });
       // console.log(res);
@@ -143,6 +140,11 @@ export default {
         this.totalCount = res.data.data.total;
         this.articleList = res.data.data.list;
         this.isDataLoad = false;
+        // 返回顶部
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
       }
     },
 
@@ -156,11 +158,19 @@ export default {
     // 根据类型的id查询文章
     async getArticleById(id) {
       this.isDataLoad = true;
-      let res = await this.$request(`/dqarticle/type/${id}`);
+      let res = await this.$request(`/dqarticle/type/${id}`, {
+        pageNum: this.$route.query.page,
+      });
       console.log(res);
       if (res.data.code == 200) {
-        this.articleList = res.data.data;
+        this.articleList = res.data.data.list;
+        this.totalCount = res.data.data.total;
         this.isDataLoad = false;
+        // 返回顶部
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
       }
     },
 
@@ -168,10 +178,14 @@ export default {
     // 点击分类的回调
     changeType(id) {
       // 判断是否重复点击
-      if (this.currentTypeId == id) return;
-      this.currentTypeId = id;
+      // if (this.currentTypeId == id) return;
+      // this.currentTypeId = id;
+      if (this.$route.params.typeId == id) return;
+      this.$router.push({ name: "community", query: { typeId: id, page: 1 } });
+      // this.currentTypeId = this.$route.params.typeId;
       // 清空当前文章列表
-      this.articleList = [];
+      // this.articleList = [];
+      // this.currentPage = 1;
       if (id == 0) {
         // 查询全部文章
         this.getAllArticle();
@@ -182,12 +196,39 @@ export default {
 
     // 添加文章成功的回调
     // 根据当前分类重新获取文章数据
-    reFreshArticalList() {
-      if (this.currentTypeId == 0) {
+    reFreshArticleList() {
+      if (this.$route.query.typeId == 0) {
         this.getAllArticle();
       } else {
-        this.getArticleById(this.currentTypeId);
+        this.getArticleById(this.$route.query.typeId);
       }
+    },
+
+    // 切换分页的回调
+    changePage(e) {
+      // console.log(e);
+      // this.currentPage = e;
+      this.$router.push({
+        name: "community",
+        query: { typeId: this.$route.query.typeId, page: e },
+      });
+      if (this.$route.query.typeId == 0) {
+        // 查询全部文章
+        this.getAllArticle();
+      } else {
+        this.getArticleById(this.$route.query.typeId);
+      }
+    },
+
+    // 点击写文章的回调
+    writeArticle() {
+      // 判断是否登录
+      if (!window.localStorage.getItem("tokenValue")) {
+        this.$message.info("登录后才能发布文章哦!");
+        return;
+      }
+
+      this.isWriteCardShow = true;
     },
   },
   filters: {
@@ -195,7 +236,11 @@ export default {
   },
   created() {
     this.getAllType();
-    this.getAllArticle();
+    if (this.$route.query.typeId == 0) {
+      this.getAllArticle();
+    } else {
+      this.getArticleById(this.$route.query.typeId);
+    }
   },
 };
 </script>
@@ -213,11 +258,17 @@ export default {
   width: 85vw;
 }
 
-.left {
+.leftContainer {
+  position: relative;
   padding: 20px 0;
   width: 200px;
   color: rgb(83, 83, 83);
   font-size: 13px;
+}
+
+.left {
+  position: fixed;
+  width: 200px;
 }
 
 .right {

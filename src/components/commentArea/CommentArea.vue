@@ -22,7 +22,11 @@
         >
       </div>
     </div>
-    <div class="commentItem" v-for="(item, index) in commentList" :key="index">
+    <div
+      class="commentItem"
+      v-for="(item, index) in commentData.list"
+      :key="index"
+    >
       <div class="commentItemContainer">
         <div class="commentItemArea">
           <div class="userAvatar">
@@ -76,6 +80,7 @@
                   <i class="iconfont icon-kuaisuhuifu"></i>
                 </div>
                 <div
+                  v-if="item.commentUserId == $store.state.userInfo.userId"
                   class="commentContorlItem"
                   @click="
                     deleteCurrentComment(item.commentId, item.commentType)
@@ -141,6 +146,23 @@
         </div>
       </div>
     </div>
+    <div
+      class="bottom"
+      v-if="
+        commentData.total && commentData.total != 0 && commentData.pages > 1
+      "
+    >
+      <!-- 分页组件 -->
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="commentData.total"
+        :page-size="commentData.pageSize"
+        :current-page="currentPage"
+        @current-change="changePage"
+      >
+      </el-pagination>
+    </div>
   </div>
 </template>
 
@@ -149,10 +171,17 @@ export default {
   name: "",
   props: {
     // 评论数据
-    commentList: {
-      type: Array,
+    commentData: {
+      type: Object,
       default() {
-        return [];
+        return {};
+      },
+    },
+    // 当前页数
+    currentPage: {
+      type: Number,
+      default() {
+        return 1;
       },
     },
   },
@@ -161,8 +190,8 @@ export default {
       // 发表评论数据
       newCommentData: {
         content: "",
-        replyid: 0,
-        articleid: this.$route.params.id,
+        replyId: 0,
+        articleId: this.$route.params.id,
       },
       // 楼层回复时commentInput的初始长度和初始值
       floorCommentOriginData: {
@@ -176,8 +205,14 @@ export default {
     // 事件
     // 提交评论
     async submitComment() {
+      // 判断是否登录
+      if (!window.localStorage.getItem("tokenValue")) {
+        this.$message.info("登录后才能评论哦!");
+        return;
+      }
+
       // console.log("提交了评论");
-      if (this.newCommentData.replyid != 0) {
+      if (this.newCommentData.replyId != 0) {
         this.newCommentData.content = this.newCommentData.content.slice(
           this.floorCommentOriginData.length
         );
@@ -194,7 +229,7 @@ export default {
         this.newCommentData,
         "post"
       );
-      console.log(res);
+      // console.log(res);
       if (res.data.code == 200) {
         // this.$emit("updateComment", {
         //   type,
@@ -202,19 +237,27 @@ export default {
         //   addData: this.newCommentData,
         // });
         this.$emit("reFreshComment", {
-          type: this.newCommentData.replyid == 0 ? "1" : "2",
+          type: this.newCommentData.replyId == 0 ? "1" : "2",
           index: this.floorCommentOriginData.rootIndex,
         });
         // 重置所有数据
         this.newCommentData = {
           content: "",
-          replyid: 0,
-          articleid: this.$route.params.id,
+          replyId: 0,
+          articleId: this.$route.params.id,
         };
         this.floorCommentOriginData = {
           length: 0,
           value: "",
         };
+      } else if (res.data.data == "登陆无效") {
+        // token失效了 清空token 和 vuex中的用户信息
+        window.localStorage.removeItem("tokenValue");
+        this.$store.commit("updateUserInfo", {});
+        this.$message.info("登录失效,请重新登录后重试!");
+        return;
+      } else {
+        this.$message.error(res.data.msg);
       }
 
       // console.log(this.newCommentData);
@@ -223,21 +266,27 @@ export default {
     // 输入时的回调
     inputComment(e) {
       // console.log(e);
-      if (this.newCommentData.replyid == 0) return;
+      if (this.newCommentData.replyId == 0) return;
 
       if (
         e
           .slice(0, this.floorCommentOriginData.length)
           .search(this.floorCommentOriginData.value) == -1
       ) {
-        this.newCommentData.replyid = 0;
+        this.newCommentData.replyId = 0;
       }
     },
 
     // 回复当前评论
     replyCurrentComment(replyid, nickName, rootIndex) {
+      // 判断是否登录
+      if (!window.localStorage.getItem("tokenValue")) {
+        this.$message.info("登录后才能评论哦!");
+        return;
+      }
+
       // console.log(replyid, nickName);
-      this.newCommentData.replyid = replyid;
+      this.newCommentData.replyId = replyid;
       this.newCommentData.content = `@${nickName}: `;
       // 记录当前长度
       this.floorCommentOriginData.length = this.newCommentData.content.length;
@@ -289,6 +338,17 @@ export default {
     // 点击用户名的回调
     gotoPersonal(id) {
       this.$router.push({ name: "personal", params: { id } });
+    },
+
+    // 点击分页的回调
+    changePage(e) {
+      // 滚动到第一条评论的高度
+      let commentItem = document.querySelector(".commentItem");
+      window.scrollTo({
+        top: commentItem.offsetTop - 94,
+      });
+
+      this.$emit("changePage", e);
     },
   },
 };
@@ -462,5 +522,11 @@ export default {
 
 .userNickName {
   cursor: pointer;
+}
+
+.bottom {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 </style>

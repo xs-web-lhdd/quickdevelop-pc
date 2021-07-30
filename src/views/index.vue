@@ -1,7 +1,7 @@
 <template>
   <div class="index">
     <nav-bar :isAlphaChange="isAlphaChange"></nav-bar>
-    <router-view :key="$route.path"></router-view>
+    <router-view></router-view>
   </div>
 </template>
 
