@@ -262,7 +262,11 @@ export default {
 
     // 跳转至个人主页
     gotoPersonal(id) {
-      this.$router.push({ name: "personal", params: { id } });
+      this.$router.push({
+        name: "personal",
+        params: { id },
+        query: { type: "post", page: 1 },
+      });
     },
 
     // 分页的回调

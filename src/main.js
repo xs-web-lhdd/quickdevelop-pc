@@ -10,7 +10,7 @@ import { request } from './network/request.js';
 Vue.prototype.$request = request;
 
 // 导入全局css
-import 'assets/css/base.css'
+import 'assets/css/base.less'
 
 Vue.config.productionTip = false
 

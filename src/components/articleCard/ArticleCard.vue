@@ -37,9 +37,10 @@
         <div class="publishDate">
           {{ item.createTime | handleArticleDateShow }}
         </div>
-        <div class="content">
-          {{ item.articleContent }}
-        </div>
+        <div
+          class="content mdContent"
+          v-html="handleMarkDown(item.articleContent)"
+        ></div>
       </div>
       <div
         class="deleteBtn"
@@ -54,6 +55,8 @@
 
 <script>
 import { handleArticleDateShow } from "plugins/utils.js";
+
+import MarkDownIt from "markdown-it";
 
 export default {
   name: "articleCard",
@@ -99,6 +102,13 @@ export default {
             message: "已取消删除",
           });
         });
+    },
+
+    // 处理markdown文本
+    handleMarkDown(content) {
+      const md = new MarkDownIt();
+      const result = md.render(content);
+      return result;
     },
   },
 };
@@ -193,13 +203,13 @@ export default {
 }
 
 .content {
-  /* 三行溢出 */
+  /* 两行溢出 */
   text-overflow: -o-ellipsis-lastline;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 

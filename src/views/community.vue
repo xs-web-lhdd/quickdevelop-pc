@@ -53,9 +53,10 @@
               <div class="publishDate">
                 {{ item.createTime | handleArticleDateShow }}
               </div>
-              <div class="content">
-                {{ item.articleContent }}
-              </div>
+              <div
+                class="content mdContent"
+                v-html="handleMarkDown(item.articleContent)"
+              ></div>
               <div class="articleImg">
                 <el-image
                   v-if="item.articleImage != ''"
@@ -68,7 +69,8 @@
             </div>
             <div class="ItemRight">
               <div class="replyCount">
-                <i class="iconfont icon-kuaisuhuifu"></i> 231
+                <i class="iconfont icon-kuaisuhuifu"></i>
+                {{ item.commentNum }}
               </div>
             </div>
           </div>
@@ -101,6 +103,8 @@
 </template>
 
 <script>
+import MarkDownIt from "markdown-it";
+
 import { handleArticleDateShow } from "plugins/utils.js";
 import GoTop from "components/goTop/GoTop.vue";
 import WriteCard from "components/writeCard/WriteCard.vue";
@@ -137,6 +141,15 @@ export default {
       });
       // console.log(res);
       if (res.data.code == 200) {
+        // 查询评论数量
+        res.data.data.list.forEach(async (item, index, arr) => {
+          let num = await this.getArticleCommentNum(item.articleId);
+          // console.log(num);
+          // arr[index].commentNum = num;
+          // 直接添加属性 vue检测不到 视图不会更新
+          this.$set(arr[index], "commentNum", num);
+        });
+
         this.totalCount = res.data.data.total;
         this.articleList = res.data.data.list;
         this.isDataLoad = false;
@@ -163,6 +176,15 @@ export default {
       });
       console.log(res);
       if (res.data.code == 200) {
+        // 查询评论数量
+        res.data.data.list.forEach(async (item, index, arr) => {
+          let num = await this.getArticleCommentNum(item.articleId);
+          console.log(num);
+          // arr[index].commentNum = num;
+          // 直接添加属性 vue检测不到 视图不会更新
+          this.$set(arr[index], "commentNum", num);
+        });
+
         this.articleList = res.data.data.list;
         this.totalCount = res.data.data.total;
         this.isDataLoad = false;
@@ -171,6 +193,17 @@ export default {
           top: 0,
           behavior: "smooth",
         });
+      }
+    },
+
+    // 查询当前id的文章的评论总数量
+    async getArticleCommentNum(id) {
+      if (id == undefined) return;
+      let res = await this.$request(`/number/dqarticle/${id}`);
+      // console.log(res);
+      if (res.data.code == 200) {
+        let num = res.data.data;
+        return num;
       }
     },
 
@@ -230,7 +263,14 @@ export default {
 
       this.isWriteCardShow = true;
     },
+
+    handleMarkDown(content) {
+      let md = new MarkDownIt();
+      let result = md.render(content);
+      return result;
+    },
   },
+  computed: {},
   filters: {
     handleArticleDateShow,
   },
