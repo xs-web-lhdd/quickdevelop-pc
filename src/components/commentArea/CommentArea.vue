@@ -1,6 +1,8 @@
 <template>
   <div class="commentArea">
-    <div class="commentText">评论区</div>
+    <div class="commentText">
+      评论区 ({{ commentData.total ? commentData.total : 0 }})
+    </div>
     <div class="commentInput">
       <el-input
         type="textarea"
@@ -33,7 +35,11 @@
             <!-- :src="item.commentUserAvatar" -->
             <el-image
               class="avatar"
-              :src="require('assets/img/userAvatar.png')"
+              :src="
+                item.commentUserAvatar != ''
+                  ? '/imgreq' + item.commentUserAvatar.split('.com')[1]
+                  : require('assets/img/defaultAvatar.jpg')
+              "
               alt=""
               lazy
               fit="cover"
@@ -350,6 +356,7 @@ export default {
       let commentItem = document.querySelector(".commentItem");
       window.scrollTo({
         top: commentItem.offsetTop - 94,
+        behavior: "smooth",
       });
 
       this.$emit("changePage", e);
@@ -532,5 +539,9 @@ export default {
   width: 100%;
   display: flex;
   justify-content: center;
+}
+
+.el-pagination {
+  margin-bottom: 20px;
 }
 </style>

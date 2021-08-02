@@ -1,32 +1,28 @@
 <template>
   <div class="communityContainer">
     <div class="community">
-      <div class="leftContainer">
-        <div class="left">
-          <div class="write">
-            <el-button type="primary" class="writeButton" @click="writeArticle">
-              写文章</el-button
-            >
+      <div class="left">
+        <div class="write">
+          <el-button type="primary" class="writeButton" @click="writeArticle">
+            写文章</el-button
+          >
+        </div>
+        <div class="sort">
+          <div
+            class="sortItem"
+            :class="$route.query.typeId == 0 ? 'currentItem' : ''"
+            @click="changeType(0)"
+          >
+            <i class="iconfont icon-xiaoxi"></i>&nbsp;&nbsp;所有文章
           </div>
-          <div class="sort">
-            <div
-              class="sortItem"
-              :class="$route.query.typeId == 0 ? 'currentItem' : ''"
-              @click="changeType(0)"
-            >
-              <i class="iconfont icon-xiaoxi"></i>&nbsp;&nbsp;所有文章
-            </div>
-            <div
-              class="sortItem"
-              :class="$route.query.typeId == item.typeId ? 'currentItem' : ''"
-              v-for="(item, index) in allType"
-              :key="index"
-              @click="changeType(item.typeId)"
-            >
-              <i class="iconfont icon-xiaoxi"></i>&nbsp;&nbsp;{{
-                item.typeName
-              }}
-            </div>
+          <div
+            class="sortItem"
+            :class="$route.query.typeId == item.typeId ? 'currentItem' : ''"
+            v-for="(item, index) in allType"
+            :key="index"
+            @click="changeType(item.typeId)"
+          >
+            <i class="iconfont icon-xiaoxi"></i>&nbsp;&nbsp;{{ item.typeName }}
           </div>
         </div>
       </div>
@@ -42,7 +38,11 @@
           >
             <div class="userAvatar">
               <el-image
-                :src="require('assets/img/userAvatar.png')"
+                :src="
+                  item.avatar && item.avatar != ''
+                    ? '/imgreq' + item.avatar.split('.com')[1]
+                    : require('assets/img/defaultAvatar.jpg')
+                "
                 alt=""
                 lazy
                 fit="cover"
@@ -76,7 +76,14 @@
           </div>
         </div>
 
-        <div class="bottom" v-if="!isDataLoad">
+        <div
+          class="nullTips"
+          v-if="articleList.length == 0 && isDataLoad == false"
+        >
+          Article Not Found !
+        </div>
+
+        <div class="bottom" v-if="!isDataLoad && articleList.length !== 0">
           <!-- 分页组件 -->
           <el-pagination
             background
@@ -135,20 +142,20 @@ export default {
     // 获取所有文章
     async getAllArticle() {
       this.isDataLoad = true;
-      let res = await this.$request("/dqarticle/list", {
+      let res = await this.$request("/dqarticle/superlist", {
         pageNum: this.$route.query.page,
         pageSize: 10,
       });
       // console.log(res);
       if (res.data.code == 200) {
-        // 查询评论数量
-        res.data.data.list.forEach(async (item, index, arr) => {
-          let num = await this.getArticleCommentNum(item.articleId);
-          // console.log(num);
-          // arr[index].commentNum = num;
-          // 直接添加属性 vue检测不到 视图不会更新
-          this.$set(arr[index], "commentNum", num);
-        });
+        // // 查询评论数量
+        // res.data.data.list.forEach(async (item, index, arr) => {
+        //   let num = await this.getArticleCommentNum(item.articleId);
+        //   // console.log(num);
+        //   // arr[index].commentNum = num;
+        //   // 直接添加属性 vue检测不到 视图不会更新
+        //   this.$set(arr[index], "commentNum", num);
+        // });
 
         this.totalCount = res.data.data.total;
         this.articleList = res.data.data.list;
@@ -168,6 +175,25 @@ export default {
       this.allType = res.data.data.list;
     },
 
+    // 搜索文章
+    async searchArticle() {
+      this.isDataLoad = true;
+      let res = await this.$request(
+        `/dqarticle/list?articleTitle=${this.$route.query.articleTitle}`,
+        { pageNum: 1, pageSize: 10 }
+      );
+      console.log(res);
+      if (res.data.code == 200) {
+        this.totalCount = res.data.data.total;
+        this.articleList = res.data.data.list;
+      } else if (res.data.code == 404) {
+        // 未查询到文章
+        this.totalCount = 0;
+        this.articleList = [];
+      }
+      this.isDataLoad = false;
+    },
+
     // 根据类型的id查询文章
     async getArticleById(id) {
       this.isDataLoad = true;
@@ -176,14 +202,14 @@ export default {
       });
       console.log(res);
       if (res.data.code == 200) {
-        // 查询评论数量
-        res.data.data.list.forEach(async (item, index, arr) => {
-          let num = await this.getArticleCommentNum(item.articleId);
-          console.log(num);
-          // arr[index].commentNum = num;
-          // 直接添加属性 vue检测不到 视图不会更新
-          this.$set(arr[index], "commentNum", num);
-        });
+        // // 查询评论数量
+        // res.data.data.list.forEach(async (item, index, arr) => {
+        //   let num = await this.getArticleCommentNum(item.articleId);
+        //   console.log(num);
+        //   // arr[index].commentNum = num;
+        //   // 直接添加属性 vue检测不到 视图不会更新
+        //   this.$set(arr[index], "commentNum", num);
+        // });
 
         this.articleList = res.data.data.list;
         this.totalCount = res.data.data.total;
@@ -213,7 +239,7 @@ export default {
       // 判断是否重复点击
       // if (this.currentTypeId == id) return;
       // this.currentTypeId = id;
-      if (this.$route.params.typeId == id) return;
+      if (this.$route.query.typeId == id) return;
       this.$router.push({ name: "community", query: { typeId: id, page: 1 } });
       // this.currentTypeId = this.$route.params.typeId;
       // 清空当前文章列表
@@ -274,10 +300,29 @@ export default {
   filters: {
     handleArticleDateShow,
   },
+  watch: {
+    // 这里监听路由的参数 因为index的router-view中的key绑定的是$route.path 所以在community页面中搜索 只是改变了query参数 是监听不到的
+    // 但也不能在index的router-view中的key绑定$route.fullPath 不然分页等操作也会导致整个页面的刷新
+    "$route.query"(current) {
+      // console.log(this.$route);
+      // 如果存在articlTitle 并且不存在typeId
+      if (current.articleTitle && !current.typeId) {
+        console.log(current.articleTitle);
+        this.searchArticle();
+      } else if (current.typeId == 0 && current.page == 1) {
+        this.getAllArticle();
+      }
+    },
+  },
   created() {
+    // 查询分类
     this.getAllType();
+    // 查询文章列表数据
+    // typeId==0 全部分类  !typeId 搜索   typeId==id  类型id为id的分类
     if (this.$route.query.typeId == 0) {
       this.getAllArticle();
+    } else if (!this.$route.query.typeId) {
+      this.searchArticle();
     } else {
       this.getArticleById(this.$route.query.typeId);
     }
@@ -298,23 +343,20 @@ export default {
   width: 85vw;
 }
 
-.leftContainer {
-  position: relative;
+.left {
+  position: sticky;
+  top: 74px;
   padding: 20px 0;
   width: 200px;
+  /* 74px+padding上下的20px */
+  height: calc(100vh - 114px);
   color: rgb(83, 83, 83);
   font-size: 13px;
 }
 
-.left {
-  position: fixed;
-  width: 200px;
-}
-
 .right {
-  padding: 20px;
-  flex: 1;
-  padding-top: 10px;
+  padding: 10px 20px 20px;
+  width: calc(100% - 200px);
 }
 
 .writeButton {
@@ -339,6 +381,7 @@ export default {
   padding: 20px 20px 20px;
   cursor: pointer;
   border-radius: 5px;
+  transition: all 0.15s;
 }
 
 .articleItem:hover {
@@ -432,5 +475,12 @@ export default {
 
 .communityContainer /deep/ .el-loading-spinner {
   margin-top: 80px;
+}
+
+.nullTips {
+  text-align: center;
+  margin-top: 20vh;
+  color: #666;
+  letter-spacing: 1px;
 }
 </style>

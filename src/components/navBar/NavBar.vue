@@ -19,12 +19,15 @@
       </div>
       <div class="right">
         <!-- 搜索组件 -->
+        <search-input></search-input>
+        <div class="fenge"></div>
+        <!-- 用户信息 -->
         <div class="user">
           <div class="avatar" @click="gotoPersonal">
             <el-image
               :src="
                 userInfo.avatar
-                  ? '/articleImg' + userInfo.avatar.split('.com')[1]
+                  ? '/imgreq' + userInfo.avatar.split('.com')[1]
                   : require('assets/img/defaultAvatar.jpg')
               "
               fit="cover"
@@ -39,7 +42,10 @@
 </template>
 
 <script>
+import SearchInput from "components/searchInput/SearchInput.vue";
+
 export default {
+  components: { SearchInput },
   name: "navBar",
   props: {
     isAlphaChange: {
@@ -84,7 +90,7 @@ export default {
     // 事件
     // 点击navItem 的回调
     goCurrentPage(path) {
-      if (this.$route.path != path) {
+      if (this.$route.fullPath != path) {
         this.$router.push(path);
         // 回到顶部
         window.scrollTo(0, 0);
@@ -157,7 +163,7 @@ export default {
   color: white;
   align-items: center;
   justify-content: space-between;
-  background-color: rgba(24, 54, 91);
+  background-color: rgb(24, 54, 91);
   width: 100%;
   z-index: 3000;
   height: 74px;
@@ -182,7 +188,7 @@ export default {
 }
 
 .user {
-  margin: 20px 60px;
+  margin: 20px 70px 20px 0px;
   display: flex;
   align-items: center;
 }
@@ -204,5 +210,19 @@ export default {
 .avatar {
   margin-right: 10px;
   cursor: pointer;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+}
+
+.fenge {
+  height: 18px;
+  width: 2px;
+  border-radius: 1px;
+  background-color: rgba(255, 255, 255, 0.4);
+  margin: 20px;
 }
 </style>

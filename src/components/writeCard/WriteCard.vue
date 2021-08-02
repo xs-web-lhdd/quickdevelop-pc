@@ -35,9 +35,9 @@
       <div class="left">
         <el-image
           :src="
-            userInfo.avatar
-              ? userInfo.avatar
-              : require('assets/img/userAvatar.png')
+            $store.state.userInfo.avatar
+              ? '/imgreq' + $store.state.userInfo.avatar.split('.com')[1]
+              : require('assets/img/defaultAvatar.jpg')
           "
           fit="cover"
         />
@@ -294,7 +294,7 @@ export default {
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
   overflow: hidden;
-  box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.11);
 }
 
 .showCard {
@@ -306,7 +306,7 @@ export default {
 }
 
 .hideCard {
-  bottom: -300px;
+  bottom: -320px;
 }
 
 .enlarge {

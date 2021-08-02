@@ -7,7 +7,7 @@
             <el-image
               :src="
                 userInfo.avatar
-                  ? '/articleImg' + userInfo.avatar.split('.com')[1]
+                  ? '/imgreq' + userInfo.avatar.split('.com')[1]
                   : require('assets/img/defaultAvatar.jpg')
               "
               fit="cover"
@@ -362,7 +362,7 @@ export default {
   background-size: cover;
   background-position-y: 60%;
   color: #f9f9f9;
-  box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
 

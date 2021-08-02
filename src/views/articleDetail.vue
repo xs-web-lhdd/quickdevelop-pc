@@ -2,79 +2,86 @@
   <div class="articleDetailContainer">
     <div class="articleDetail">
       <div class="left">
-        <div class="title">
-          {{ articleData.articleTitle }}
-        </div>
-        <!-- 用户信息 -->
-        <div class="author">
-          <div class="authorAvatar">
-            <el-image
-              class="avatar"
-              :src="require('assets/img/userAvatar.png')"
-              alt=""
-              lazy
-              fit="cover"
-              @click="gotoPersonal(articleData.autorId)"
-            />
+        <div class="card">
+          <img src="~assets/img/testCoverImg.jpg" alt="" class="coverImg" />
+          <div class="leftContent">
+            <div class="title">
+              {{ articleData.articleTitle }}
+            </div>
+            <!-- 用户信息 -->
+            <div class="author">
+              <div class="authorAvatar">
+                <el-image
+                  class="avatar"
+                  :src="
+                    articleData.avatar && articleData.avatar != ''
+                      ? '/imgreq' + articleData.avatar.split('.com')[1]
+                      : require('assets/img/defaultAvatar.jpg')
+                  "
+                  alt=""
+                  lazy
+                  fit="cover"
+                  @click="gotoPersonal(articleData.authorId)"
+                />
+              </div>
+              <div
+                class="authorName"
+                @click="gotoPersonal(articleData.authorId)"
+              >
+                {{ articleData.authorNickname }}
+              </div>
+              <div class="publishDate">
+                {{ articleData.createTime }}
+                <div
+                  class="updatearticle"
+                  v-if="articleData.authorId == $store.state.userInfo.userId"
+                >
+                  <div @click="isWriteCardShow = true">更新文章</div>
+                  <div class="fenge">|</div>
+                  <div @click="deleteCurrentArticle">删除文章</div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="authorName" @click="gotoPersonal(articleData.autorId)">
-            {{ articleData.authorNickname }}
-          </div>
-          <div class="publishDate">
-            {{ articleData.createTime }}
+          <!-- 文章内容 -->
+          <div class="content" v-html="handleMarkDown"></div>
+          <img src="~assets/img/test.jpg" class="contentImg" />
+          <div class="commentControl">
             <div
-              class="updatearticle"
-              v-if="articleData.autorId == $store.state.userInfo.userId"
+              class="commentControlItem"
+              :class="isUserLike ? 'controlItemDone' : ''"
+              @click="likeCurrentArticle(!isUserLike)"
             >
-              <div @click="isWriteCardShow = true">更新文章</div>
-              <div class="fenge">|</div>
-              <div @click="deleteCurrentArticle">删除文章</div>
+              <i class="iconfont icon-dianzan"></i>
+              {{ (isUserLike ? "已点赞" : "点赞") + "  " + this.likeCount }}
+            </div>
+            <div class="likeUsersAvatar">
+              <el-image
+                v-for="(item, index) in likeUserList"
+                :key="index"
+                :src="
+                  item.avatar && item.avatar.split('.com')[1]
+                    ? '/imgreq' + item.avatar.split('.com')[1]
+                    : require('assets/img/defaultAvatar.jpg')
+                "
+                fit="cover"
+              ></el-image>
             </div>
           </div>
         </div>
-        <!-- 文章内容 -->
-        <div class="content" v-html="handleMarkDown"></div>
-        <el-image :src="require('assets/img/test.jpg')" class="contentImg" />
-        <div class="commentControl">
-          <div
-            class="commentControlItem"
-            :class="isUserLike ? 'controlItemDone' : ''"
-            @click="likeCurrentArticle(!isUserLike)"
-          >
-            <i class="iconfont icon-dianzan"></i>
-            {{ (isUserLike ? "已点赞" : "点赞") + "  " + this.likeCount }}
-          </div>
-          <div class="likeUsersAvatar">
-            <el-image
-              v-for="(item, index) in likeUserList"
-              :key="index"
-              :src="
-                item.avatar && item.avatar.split('.com')[1]
-                  ? '/articleImg' + item.avatar.split('.com')[1]
-                  : require('assets/img/defaultAvatar.jpg')
-              "
-              fit="cover"
-            ></el-image>
-          </div>
-        </div>
-        <!-- 评论区 -->
-        <comment-area
-          :commentData="commentData"
-          :floorCommentList="floorCommentList"
-          :currentPage="currentCommentPage"
-          @reFreshComment="({ type, index }) => reFreshComment(type, index)"
-          @getFloorCommentList="({ id, index }) => getFloorComment(id, index)"
-          @changePage="changeCommentPage"
-        ></comment-area>
-      </div>
-      <div class="rightContainer">
-        <div
-          class="right articleRight"
-          :class="isRightFixed ? 'rightFixed' : ''"
-        >
-          广告位招租
+        <div class="card leftContent">
+          <!-- 评论区 -->
+          <comment-area
+            :commentData="commentData"
+            :floorCommentList="floorCommentList"
+            :currentPage="currentCommentPage"
+            @reFreshComment="({ type, index }) => reFreshComment(type, index)"
+            @getFloorCommentList="({ id, index }) => getFloorComment(id, index)"
+            @changePage="changeCommentPage"
+          ></comment-area>
         </div>
       </div>
+      <div class="right">广告位招租</div>
     </div>
     <!-- 返回顶部组件 -->
     <!-- 编辑组件 -->
@@ -104,8 +111,6 @@ export default {
 
   data() {
     return {
-      // right是否改为固定定位
-      isRightFixed: false,
       // 文章数据
       articleData: {},
       // 评论数据
@@ -293,28 +298,7 @@ export default {
     await this.getLikeUsers(this.$route.params.id);
   },
 
-  mounted() {
-    // 获取right的dom
-    let right = document.querySelector(".articleRight");
-    // 监听滚动
-    document.addEventListener("scroll", (e) => {
-      // console.log(window.scrollY);
-      // 这里的right.offsetTop 是算上顶部栏的，操作时要减去顶部栏
-      // console.log(right.offsetTop);
-      // 减去顶部栏 再减去顶部空间
-      if (
-        window.scrollY >= right.offsetTop - 94 &&
-        this.isRightFixed == false
-      ) {
-        this.isRightFixed = true;
-      } else if (
-        window.scrollY < right.offsetTop - 74 &&
-        this.isRightFixed == true
-      ) {
-        this.isRightFixed = false;
-      }
-    });
-  },
+  mounted() {},
 };
 </script>
 
@@ -326,8 +310,8 @@ export default {
 
 .articleDetail {
   display: flex;
-  min-width: 1000px;
-  width: 85vw;
+  max-width: 1200px;
+  width: 90vw;
   padding: 40px 0;
 }
 
@@ -340,18 +324,32 @@ export default {
 
 .left {
   flex: 1;
-  padding: 0 30px;
+  margin: 0 20px;
 }
 
-.rightContainer {
-  width: 250px;
-  height: 500px;
+.card {
+  box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background-color: #fff;
+  border-radius: 10px;
+  margin-bottom: 30px;
+}
+
+.leftContent {
+  padding: 30px 30px 0px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .right {
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  top: 90px;
   width: 250px;
   height: 500px;
-  background-color: white;
+  background-color: #bc1a25;
+  color: #e3da48;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -359,14 +357,9 @@ export default {
   letter-spacing: 15px;
   /* 文字竖直排列 */
   writing-mode: vertical-lr;
-  box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.1);
-}
-
-.rightFixed {
-  position: fixed;
-  top: 94px;
-  /* 滚动条10px 居中左右两边各5px 所以这里还要减掉5px */
-  right: calc(7.5vw - 5px);
+  font-weight: bold;
+  box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
 }
 
 .title {
@@ -388,7 +381,7 @@ export default {
   display: flex;
   align-items: center;
   font-size: 14px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .authorName {
@@ -425,14 +418,19 @@ export default {
   line-height: 23px;
   word-break: break-all;
   margin-bottom: 20px;
+  padding: 0 30px;
 }
 
-.content .el-image {
+.contentImg {
   margin-top: 20px;
+  width: 85%;
+  margin-left: 7.5%;
 }
 
 .commentControl {
   margin: 30px 0 50px;
+  padding: 0 30px;
+  box-sizing: border-box;
   display: flex;
   position: relative;
 }
@@ -461,7 +459,7 @@ export default {
 
 .likeUsersAvatar {
   position: absolute;
-  right: 0px;
+  right: 30px;
   width: 70px;
 }
 
@@ -473,13 +471,23 @@ export default {
   border-radius: 50%;
 }
 
+.el-image:nth-child(1) {
+  z-index: 3;
+}
+
 .likeUsersAvatar .el-image:nth-child(2) {
-  z-index: -1;
+  z-index: 2;
   right: 17.5px;
 }
 
 .likeUsersAvatar .el-image:nth-child(3) {
-  z-index: -2;
+  z-index: 1;
   right: 35px;
+}
+
+.coverImg {
+  width: 100%;
+  height: 270px;
+  object-fit: cover;
 }
 </style>

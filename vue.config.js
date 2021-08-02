@@ -25,6 +25,7 @@ module.exports = {
                 target: 'https://img2.woyaogexing.com/',
                 changeOrigin: true,
                 ws: true,
+                secure: false,
                 pathRewrite: {
                     '^/articleImg': ''
                 }

@@ -1,7 +1,7 @@
 <template>
   <div class="index">
     <nav-bar :isAlphaChange="isAlphaChange"></nav-bar>
-    <router-view></router-view>
+    <router-view :key="$route.path"></router-view>
   </div>
 </template>
 
@@ -29,6 +29,7 @@ export default {
   },
   watch: {
     "$route.path"(current) {
+      // console.log(this.$route);
       if (current == "/home") {
         this.isAlphaChange = true;
       } else {
