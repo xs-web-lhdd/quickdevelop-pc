@@ -3,7 +3,7 @@
     <div class="articleDetail">
       <div class="left">
         <div class="card">
-          <img src="~assets/img/testCoverImg.jpg" alt="" class="coverImg" />
+          <img :src="articleData.articleImage" alt="" class="coverImg" />
           <div class="leftContent">
             <div class="title">
               {{ articleData.articleTitle }}
@@ -44,8 +44,7 @@
             </div>
           </div>
           <!-- 文章内容 -->
-          <div class="content" v-html="handleMarkDown"></div>
-          <img src="~assets/img/test.jpg" class="contentImg" />
+          <div class="content detailtContent" v-html="handleMarkDown"></div>
           <div class="commentControl">
             <div
               class="commentControlItem"
@@ -156,10 +155,9 @@ export default {
 
     // 请求文章的所有根评论
     async getarticleComment(id) {
-      let res = await this.$request(`/dqcomment/dqarticle/${id}`, {
-        pageSize: 20,
-        pageNum: this.currentCommentPage,
-      });
+      let res = await this.$request(
+        `/dqcomment/superlist?articleId=${id}&pageSize=20&pageNum=${this.currentCommentPage}`
+      );
       console.log(res);
       if (res.data.code == 200) {
         res.data.data.list.forEach((item, index, arr) => {
@@ -381,7 +379,8 @@ export default {
   display: flex;
   align-items: center;
   font-size: 14px;
-  margin-bottom: 10px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
 }
 
 .authorName {
@@ -487,7 +486,7 @@ export default {
 
 .coverImg {
   width: 100%;
-  height: 270px;
+  height: 300px;
   object-fit: cover;
 }
 </style>

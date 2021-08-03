@@ -544,4 +544,8 @@ export default {
 .el-pagination {
   margin-bottom: 20px;
 }
+
+.commentInput {
+  margin-bottom: 20px;
+}
 </style>

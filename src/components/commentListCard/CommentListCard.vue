@@ -106,7 +106,7 @@ export default {
   color: #ffffff;
   position: absolute;
   right: -40px;
-  top: -40px;
+  top: 10px;
   height: 0;
   width: 0;
   align-items: center;
@@ -122,7 +122,6 @@ export default {
 }
 
 .cardItem:hover .deleteBtn {
-  top: 10px;
   right: 10px;
   height: 35px;
   width: 35px;

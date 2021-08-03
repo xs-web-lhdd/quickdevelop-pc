@@ -38,6 +38,14 @@ module.exports = {
                     '^/imgreq': ''
                 }
             },
+            '/xiaopopan': {
+                target: "http://www.codeman.ink:8001/",
+                changeOrigin: true,
+                ws: true,
+                pathRewrite: {
+                    '^/xiaopopan': ''
+                }
+            }
         }
     },
 }

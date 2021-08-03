@@ -91,10 +91,27 @@
         >发布</el-button
       >
       <div class="bottomBtnContainer">
-        <div class="bottomBtn">
-          <i class="iconfont icon-tupian"></i>
-        </div>
-        <div class="bottomBtn">上传封面</div>
+        <!-- 图片上传 -->
+        <el-upload
+          multiple
+          action="/xiaopopan/eduoss/fileoss/upload/1413125531471233026?catalogue=/root/drawingBed"
+          :show-file-list="false"
+          :on-success="imgUploadSuccess"
+          :on-error="imgUploadError"
+        >
+          <div class="bottomBtn">
+            <i class="iconfont icon-tupian"></i>
+          </div>
+        </el-upload>
+        <!-- 封面上传 -->
+        <el-upload
+          action="/xiaopopan/eduoss/fileoss/upload/1413125531471233026?catalogue=/root/drawingBed"
+          :show-file-list="false"
+          :on-success="uploadSuccess"
+          :on-error="uploadError"
+        >
+          <div class="bottomBtn">上传封面</div>
+        </el-upload>
         <div class="bottomBtn" @click="isMdLiveShow = !isMdLiveShow">
           {{ isMdLiveShow ? "关闭" : "打开" }}md效果预览
         </div>
@@ -250,6 +267,32 @@ export default {
       }
       this.$emit("closeCard");
     },
+
+    // 封面上传成功的回调
+    uploadSuccess(e) {
+      console.log(e);
+      this.newArticleData.articleImage = e.data.file.url;
+      this.$message.success("封面上传成功!");
+    },
+
+    // 封面上传失败的回调
+    uploadError(e) {
+      console.log(e);
+      this.$message.error("封面上传失败, 请稍后重试!");
+    },
+
+    // 文章图片上传成功的回调
+    imgUploadSuccess(e) {
+      console.log(e);
+      let img = `![${e.data.file.name}](${e.data.file.url} "${e.data.file.name}")   `;
+      this.newArticleData.articleContent += img;
+    },
+
+    // 文章图片上传失败的回调
+    imgUploadError(e) {
+      console.log(e);
+      this.$message.error("图片上传失败, 请稍后重试!");
+    },
   },
 
   created() {
@@ -281,7 +324,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .writeCard {
   background-color: white;
   position: fixed;
@@ -362,6 +405,7 @@ export default {
   flex-direction: column;
   padding: 0 10px;
   height: 100%;
+  width: 100%;
 }
 
 .title,
@@ -372,6 +416,10 @@ export default {
   outline: none;
   margin: 10px 0;
   color: rgb(34, 34, 34);
+}
+
+.content {
+  word-break: break-all;
 }
 
 .title {

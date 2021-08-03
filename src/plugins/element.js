@@ -17,6 +17,7 @@ import {
   Dialog,
   Pagination,
   Loading,
+  Upload,
 } from 'element-ui'
 
 Vue.use(Button)
@@ -33,6 +34,7 @@ Vue.use(Select)
 Vue.use(Dialog)
 Vue.use(Pagination)
 Vue.use(Loading)
+Vue.use(Upload)
 
 Vue.prototype.$message = Message
 Vue.prototype.$confirm = MessageBox.confirm
