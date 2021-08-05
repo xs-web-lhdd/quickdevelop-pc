@@ -49,3 +49,21 @@
 .el-message {
   z-index: 5000 !important;
 }
+
+.el-step__title {
+  font-size: 14px;
+}
+
+.el-step__title {
+  cursor: pointer;
+  user-select: none;
+}
+
+.is-finish {
+  color: #3566a1 !important;
+  border-color: #3566a1 !important;
+}
+
+.el-popover {
+  z-index: 5000 !important;
+}

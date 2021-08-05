@@ -18,6 +18,10 @@ import {
   Pagination,
   Loading,
   Upload,
+  Steps,
+  Step,
+  Popover,
+  Radio,
 } from 'element-ui'
 
 Vue.use(Button)
@@ -35,6 +39,10 @@ Vue.use(Dialog)
 Vue.use(Pagination)
 Vue.use(Loading)
 Vue.use(Upload)
+Vue.use(Steps)
+Vue.use(Step)
+Vue.use(Popover)
+Vue.use(Radio)
 
 Vue.prototype.$message = Message
 Vue.prototype.$confirm = MessageBox.confirm

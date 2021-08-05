@@ -29,20 +29,18 @@
       v-for="(item, index) in commentData.list"
       :key="index"
     >
-      <div class="commentItemContainer">
+      <div class="commentItemContainer" v-if="item.commentType == 1">
         <div class="commentItemArea">
           <div class="userAvatar">
             <!-- :src="item.commentUserAvatar" -->
-            <el-image
+            <img
               class="avatar"
               :src="
                 item.commentUserAvatar != ''
-                  ? '/imgreq' + item.commentUserAvatar.split('.com')[1]
+                  ? item.commentUserAvatar
                   : require('assets/img/defaultAvatar.jpg')
               "
               alt=""
-              lazy
-              fit="cover"
             />
           </div>
           <div class="commentInfo">
@@ -65,10 +63,13 @@
               <div class="commentContorlArea">
                 <div
                   class="commentContorlItem checkReply"
-                  v-if="item.floorCommentList.length == 0"
+                  v-if="
+                    item.floorCommentList.length == 0 &&
+                    item.childCommentNum != 0
+                  "
                   @click="checkReply(item.commentId, index)"
                 >
-                  查看回复
+                  查看回复 {{ "(" + item.childCommentNum + ")" }}
                 </div>
                 <div class="commentContorlItem">
                   <i class="iconfont icon-dianzan"></i>

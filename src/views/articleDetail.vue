@@ -1,5 +1,5 @@
 <template>
-  <div class="articleDetailContainer">
+  <div class="articleDetailContainer" v-if="articleData.articleTitle">
     <div class="articleDetail">
       <div class="left">
         <div class="card">
@@ -11,11 +11,11 @@
             <!-- 用户信息 -->
             <div class="author">
               <div class="authorAvatar">
-                <el-image
+                <img
                   class="avatar"
                   :src="
                     articleData.avatar && articleData.avatar != ''
-                      ? '/imgreq' + articleData.avatar.split('.com')[1]
+                      ? articleData.avatar
                       : require('assets/img/defaultAvatar.jpg')
                   "
                   alt=""
@@ -55,20 +55,20 @@
               {{ (isUserLike ? "已点赞" : "点赞") + "  " + this.likeCount }}
             </div>
             <div class="likeUsersAvatar">
-              <el-image
+              <img
                 v-for="(item, index) in likeUserList"
                 :key="index"
                 :src="
-                  item.avatar && item.avatar.split('.com')[1]
-                    ? '/imgreq' + item.avatar.split('.com')[1]
+                  item.avatar && item.avatar != ''
+                    ? item.avatar
                     : require('assets/img/defaultAvatar.jpg')
                 "
                 fit="cover"
-              ></el-image>
+              />
             </div>
           </div>
         </div>
-        <div class="card leftContent">
+        <div class="card leftContent commentArea">
           <!-- 评论区 -->
           <comment-area
             :commentData="commentData"
@@ -80,7 +80,11 @@
           ></comment-area>
         </div>
       </div>
-      <div class="right">广告位招租</div>
+      <div class="right">
+        <!-- 用户信息卡片 -->
+        <user-info-card :userId="articleData.authorId"></user-info-card>
+        <positioning-card></positioning-card>
+      </div>
     </div>
     <!-- 返回顶部组件 -->
     <!-- 编辑组件 -->
@@ -90,7 +94,6 @@
       @closeCard="isWriteCardShow = false"
       @reFreshArticleList="getarticleData($route.params.id)"
     ></write-card>
-    <go-top></go-top>
   </div>
 </template>
 
@@ -100,12 +103,16 @@ import MarkDownIt from "markdown-it";
 import CommentArea from "../components/commentArea/CommentArea.vue";
 import GoTop from "../components/goTop/GoTop.vue";
 import WriteCard from "../components/writeCard/WriteCard.vue";
+import UserInfoCard from "../components/userInfoCard/UserInfoCard.vue";
+import PositioningCard from "../components/positioningCard/PositioningCard.vue";
 export default {
   name: "articleDetail",
   components: {
     CommentArea,
     GoTop,
     WriteCard,
+    UserInfoCard,
+    PositioningCard,
   },
 
   data() {
@@ -289,6 +296,7 @@ export default {
   },
 
   async created() {
+    window.scrollTo(0, 0);
     await this.getarticleData(this.$route.params.id);
     await this.getarticleComment(this.$route.params.id);
     await this.getArticleLike(this.$route.params.id);
@@ -300,7 +308,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .articleDetailContainer {
   display: flex;
   justify-content: center;
@@ -344,20 +352,8 @@ export default {
   position: -webkit-sticky; /* Safari */
   position: sticky;
   top: 90px;
-  width: 250px;
-  height: 500px;
-  background-color: #bc1a25;
-  color: #e3da48;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 50px;
-  letter-spacing: 15px;
-  /* 文字竖直排列 */
-  writing-mode: vertical-lr;
-  font-weight: bold;
-  box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
+  width: 325px;
+  height: 550px;
 }
 
 .title {
@@ -418,20 +414,17 @@ export default {
   word-break: break-all;
   margin-bottom: 20px;
   padding: 0 30px;
-}
-
-.contentImg {
-  margin-top: 20px;
-  width: 85%;
-  margin-left: 7.5%;
+  max-width: 850px;
+  box-sizing: border-box;
 }
 
 .commentControl {
-  margin: 30px 0 50px;
-  padding: 0 30px;
+  margin: 20px 30px 25px;
+  padding: 20px 0px 0;
   box-sizing: border-box;
   display: flex;
   position: relative;
+  border-top: 1px solid #eee;
 }
 
 .commentControlItem {
@@ -458,11 +451,11 @@ export default {
 
 .likeUsersAvatar {
   position: absolute;
-  right: 30px;
+  right: 0px;
   width: 70px;
 }
 
-.likeUsersAvatar .el-image {
+.likeUsersAvatar img {
   position: absolute;
   right: 0;
   width: 35px;
@@ -470,16 +463,16 @@ export default {
   border-radius: 50%;
 }
 
-.el-image:nth-child(1) {
+.likeUsersAvatar img:nth-child(1) {
   z-index: 3;
 }
 
-.likeUsersAvatar .el-image:nth-child(2) {
+.likeUsersAvatar img:nth-child(2) {
   z-index: 2;
   right: 17.5px;
 }
 
-.likeUsersAvatar .el-image:nth-child(3) {
+.likeUsersAvatar img:nth-child(3) {
   z-index: 1;
   right: 35px;
 }

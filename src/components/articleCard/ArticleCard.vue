@@ -22,11 +22,7 @@
     >
       <div class="articleImageContainer">
         <el-image
-          :src="
-            item.articleImage
-              ? '/imgreq' + item.articleImage.split('.com')[1]
-              : ''
-          "
+          :src="item.articleImage ? item.articleImage : ''"
           lazy
           fit="cover"
           class="artileImage"

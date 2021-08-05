@@ -37,16 +37,16 @@
             "
           >
             <div class="userAvatar">
-              <el-image
+              <img
                 :src="
                   item.avatar && item.avatar != ''
-                    ? '/imgreq' + item.avatar.split('.com')[1]
+                    ? item.avatar
                     : require('assets/img/defaultAvatar.jpg')
                 "
                 alt=""
                 lazy
                 fit="cover"
-              ></el-image>
+              />
             </div>
             <div class="ItemCenter">
               <div class="title">{{ item.articleTitle }}</div>
@@ -58,13 +58,13 @@
                 v-html="handleMarkDown(item.articleContent)"
               ></div>
               <div class="articleImg">
-                <el-image
+                <img
                   v-if="item.articleImage != ''"
-                  :src="'/imgreq' + item.articleImage.split('.com')[1]"
+                  :src="item.articleImage"
                   class="articleImgItem"
                   fit="contain"
                   lazy
-                ></el-image>
+                />
               </div>
             </div>
             <div class="ItemRight">
@@ -197,8 +197,9 @@ export default {
     // 根据类型的id查询文章
     async getArticleById(id) {
       this.isDataLoad = true;
-      let res = await this.$request(`/dqarticle/type/${id}`, {
+      let res = await this.$request(`/dqarticle/superlist?typeId=${id}`, {
         pageNum: this.$route.query.page,
+        pageSize: 10,
       });
       console.log(res);
       if (res.data.code == 200) {
@@ -219,6 +220,10 @@ export default {
           top: 0,
           behavior: "smooth",
         });
+      } else if (res.data.code == 404) {
+        this.articleList = [];
+        this, (this.totalCount = 0);
+        this.isDataLoad = false;
       }
     },
 
@@ -392,7 +397,7 @@ export default {
   width: 45px;
 }
 
-.userAvatar .el-image {
+.userAvatar img {
   height: 40px;
   width: 40px;
   border-radius: 50%;

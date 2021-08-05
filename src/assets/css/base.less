@@ -1,6 +1,6 @@
 @import "./normalize.css";
 @import "./element.css";
-@import "https://at.alicdn.com/t/font_2688881_9s3ta21oj5n.css?spm=a313x.7781069.1998910419.46&file=font_2688881_9s3ta21oj5n.css";
+@import "https://at.alicdn.com/t/font_2688881_9mmgqckggts.css?spm=a313x.7781069.1998910419.45&file=font_2688881_9mmgqckggts.css";
 
 *::-webkit-scrollbar {
   width: 10px;
@@ -44,10 +44,25 @@ html {
   background-color: #fdfdfd;
 }
 
-.detailtContent img {
-  max-width: 100%;
-  display: block;
-  margin: 20px 0;
+.detailtContent {
+  * {
+    word-break: break-all;
+  }
+
+  img  {
+    max-width: 100%;
+    display: block;
+    margin: 20px 0;
+  }
+
+  pre {
+    max-width: 750px;
+    overflow: scroll;
+    background-color: #282c34;
+    color: white;
+    padding: 20px;
+    border-radius: 5px;
+  }
 }
 
 .mdLive {
@@ -55,4 +70,8 @@ html {
     max-width: 90%;
     margin: 10px 0;
   }
+}
+
+img {
+  object-fit: cover;
 }

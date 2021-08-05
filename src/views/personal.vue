@@ -4,14 +4,10 @@
       <div class="background">
         <div class="left">
           <div class="avatar">
-            <el-image
-              :src="
-                userInfo.avatar
-                  ? '/imgreq' + userInfo.avatar.split('.com')[1]
-                  : require('assets/img/defaultAvatar.jpg')
-              "
+            <img
+              :src="userInfo.avatar || require('assets/img/defaultAvatar.jpg')"
               fit="cover"
-            ></el-image>
+            />
           </div>
           <div class="userInfo">
             <div class="userName">
@@ -25,11 +21,11 @@
         </div>
         <div class="right">
           <div @click="changeType('post')">
-            Posts: <span>{{ articleListData.total }}</span>
+            Posts: <span>{{ articleListData && articleListData.total }}</span>
           </div>
           <div @click="changeType('comment')">
             Comments:
-            <span>{{ commentData.total }}</span>
+            <span>{{ commentData && commentData.total }}</span>
           </div>
           <div>Views: <span>1.2k</span></div>
         </div>
@@ -130,19 +126,31 @@
       </div>
       <div class="dialogInputItem">
         <div class="inputTitle">性别:</div>
-        <el-input
+        <!-- <el-input
           v-model="editUserData.sex"
           autocomplete="off"
           size="small"
-        ></el-input>
+        ></el-input> -->
+        <el-radio v-model="editUserData.sex" label="0">保密</el-radio>
+        <el-radio v-model="editUserData.sex" label="1">男生</el-radio>
+        <el-radio v-model="editUserData.sex" label="2">女生</el-radio>
       </div>
       <div class="dialogInputItem">
         <div class="inputTitle">头像:</div>
-        <el-input
+        <!-- <el-input
           v-model="editUserData.avatar"
           autocomplete="off"
           size="small"
-        ></el-input>
+        ></el-input> -->
+        <el-upload
+          action="/xiaopopan/eduoss/fileoss/upload/1413125531471233026?catalogue=/root/drawingBed"
+          :show-file-list="false"
+          :on-success="uploadSuccess"
+          :on-error="uploadError"
+          :before-upload="beforeImgUpload"
+        >
+          <img :src="editUserData.avatar" alt="" class="uploadAvatar" />
+        </el-upload>
       </div>
       <!-- <div class="dialogInputItem">
         <div class="inputTitle">密码:</div>
@@ -330,6 +338,39 @@ export default {
         this.getCommentData(this.$route.params.id);
       }
     },
+
+    // 封面上传成功的回调
+    uploadSuccess(e) {
+      console.log(e);
+      this.editUserData.avatar = e.data.file.url;
+      this.$message.success("头像上传成功!");
+    },
+
+    // 封面上传失败的回调
+    uploadError(e) {
+      console.log(e);
+      this.$message.error("头像上传失败, 请稍后重试!");
+    },
+
+    // 图片上传前的回调
+    beforeImgUpload(file) {
+      console.log(file);
+      // 上传的图片不能超过 1m
+      const isImg1M = file.size / 1024 / 1024 <= 1;
+      const isImg =
+        file.type === "image/jpeg" ||
+        file.type === "image/png" ||
+        file.type === "image/bmp";
+
+      if (!isImg) {
+        this.$message.warning("上传的头像只能是 JPG/PNG/BMP 格式!");
+      }
+      if (!isImg1M) {
+        this.$message.warning("上传的头像大小不能超过 1MB 哦!");
+      }
+      // 返回false可以阻止图片上传
+      return isImg && isImg1M;
+    },
   },
   created() {
     window.scrollTo(0, 0);
@@ -370,7 +411,7 @@ export default {
   margin-right: 20px;
 }
 
-.avatar .el-image {
+.avatar img {
   height: 100px;
   width: 100px;
   border-radius: 10px;
@@ -471,7 +512,7 @@ export default {
 }
 
 .inputTitle {
-  width: 100px;
+  width: 85px;
 }
 
 .bottom {
@@ -491,5 +532,15 @@ export default {
   font-size: 14px;
   color: rgb(133, 133, 133);
   text-align: center;
+}
+
+.uploadAvatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+}
+
+.el-input {
+  width: 83%;
 }
 </style>

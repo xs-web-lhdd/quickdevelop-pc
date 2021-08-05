@@ -14,7 +14,7 @@
           >
             Community
           </div>
-          <div class="navItem" @click="goCurrentPage('/blogs')">Blogs</div>
+          <!-- <div class="navItem" @click="goCurrentPage('/blogs')">Blogs</div> -->
         </div>
       </div>
       <div class="right">
@@ -188,9 +188,17 @@ export default {
 }
 
 .user {
-  margin: 20px 70px 20px 0px;
+  margin: 20px 20px 20px 0px;
   display: flex;
   align-items: center;
+  width: 130px;
+}
+
+.userName {
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .left img {

@@ -98,20 +98,26 @@
           :show-file-list="false"
           :on-success="imgUploadSuccess"
           :on-error="imgUploadError"
+          :before-upload="beforeImgUpload"
         >
           <div class="bottomBtn">
             <i class="iconfont icon-tupian"></i>
           </div>
         </el-upload>
         <!-- 封面上传 -->
-        <el-upload
-          action="/xiaopopan/eduoss/fileoss/upload/1413125531471233026?catalogue=/root/drawingBed"
-          :show-file-list="false"
-          :on-success="uploadSuccess"
-          :on-error="uploadError"
-        >
-          <div class="bottomBtn">上传封面</div>
-        </el-upload>
+        <el-popover trigger="hover" width="200">
+          <el-upload
+            action="/xiaopopan/eduoss/fileoss/upload/1413125531471233026?catalogue=/root/drawingBed"
+            :show-file-list="false"
+            :on-success="uploadSuccess"
+            :on-error="uploadError"
+            :before-upload="beforeImgUpload"
+            slot="reference"
+          >
+            <div class="bottomBtn">上传封面</div>
+          </el-upload>
+          <img :src="newArticleData.articleImage" alt="" class="popoverImg" />
+        </el-popover>
         <div class="bottomBtn" @click="isMdLiveShow = !isMdLiveShow">
           {{ isMdLiveShow ? "关闭" : "打开" }}md效果预览
         </div>
@@ -160,7 +166,7 @@ export default {
         articleTitle: "",
         articleContent: "",
         articleImage:
-          "https://chen110.oss-cn-guangzhou.aliyuncs.com/2021/07/10/jisoo.png",
+          "https://chen110.oss-cn-guangzhou.aliyuncs.com/2021/08/03/wallhaven-4ooz99.jpg",
       },
       // 文章分类
       articleType: [],
@@ -256,7 +262,7 @@ export default {
           articletitle: "",
           articlecontent: "",
           articleImage:
-            "https://chen110.oss-cn-guangzhou.aliyuncs.com/2021/07/10/jisoo.png",
+            "https://chen110.oss-cn-guangzhou.aliyuncs.com/2021/08/03/wallhaven-4ooz99.jpg",
         };
       } else {
         this.newArticleData.typeId = this.originArticle.typeId;
@@ -292,6 +298,26 @@ export default {
     imgUploadError(e) {
       console.log(e);
       this.$message.error("图片上传失败, 请稍后重试!");
+    },
+
+    // 图片上传前的回调
+    beforeImgUpload(file) {
+      console.log(file);
+      // 上传的图片不能超过 1m
+      const isImg1M = file.size / 1024 / 1024 <= 1;
+      const isImg =
+        file.type === "image/jpeg" ||
+        file.type === "image/png" ||
+        file.type === "image/bmp";
+
+      if (!isImg) {
+        this.$message.warning("上传的图片只能是 JPG/PNG/BMP 格式!");
+      }
+      if (!isImg1M) {
+        this.$message.warning("上传的图片大小不能超过 1MB 哦!");
+      }
+      // 返回false可以阻止图片上传
+      return isImg && isImg1M;
     },
   },
 
@@ -517,5 +543,10 @@ export default {
 .bottomBtnContainer {
   display: flex;
   align-items: center;
+}
+
+.popoverImg {
+  width: 100%;
+  z-index: 10000;
 }
 </style>
