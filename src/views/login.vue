@@ -102,8 +102,8 @@ export default {
   data() {
     return {
       login: {
-        userName: "maoyan",
-        passWord: "123456",
+        userName: "",
+        passWord: "",
       },
       registered: {
         phoneNumber: "",
@@ -168,6 +168,7 @@ export default {
       if (res.data.code == 200) {
         this.$message.success("注册成功!");
         this.login.userName = this.registered.userName;
+        this.login.passWord = "";
         this.activeName = "first";
         this.registered = {
           phoneNumber: "",

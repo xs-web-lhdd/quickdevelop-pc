@@ -36,7 +36,7 @@
             <img
               class="avatar"
               :src="
-                item.commentUserAvatar != ''
+                item.commentUserAvatar != '发表评论的用户的头像'
                   ? item.commentUserAvatar
                   : require('assets/img/defaultAvatar.jpg')
               "

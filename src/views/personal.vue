@@ -75,7 +75,13 @@
                 ? commentData.total
                 : 1
             "
-            :page-size="$route.query.type == 'post' ? 7 : 16"
+            :page-size="
+              $route.query.type == 'post'
+                ? this.$store.state.userInfo.userId == this.$route.params.id
+                  ? 7
+                  : 8
+                : 16
+            "
             :current-page="$route.query.page * 1"
             @current-change="changePage"
           >
@@ -236,7 +242,8 @@ export default {
       this.isDataLoad = true;
       let res = await this.$request(`/dqarticle/author/${id}`, {
         pageNum: this.$route.query.page,
-        pageSize: 7,
+        pageSize:
+          this.$store.state.userInfo.userId == this.$route.params.id ? 7 : 8,
       });
       console.log(res);
       this.isDataLoad = false;
@@ -370,6 +377,19 @@ export default {
       }
       // 返回false可以阻止图片上传
       return isImg && isImg1M;
+    },
+  },
+  watch: {
+    "$store.state.userInfo"(current) {
+      // 当在personal页面刷新时，vuex中的userInfo需要重新获取，而获取数据需要一定时间
+      // 这时候判断this.$store.state.userInfo.userId == this.$route.params.id  如果原本应为true  但因为数据没有及时拿到 所以仍判断是false
+      // 而false会请求8条数据 加上如果是本人主页的话 加上添加的card 则会存在9条数据 影响格式美观  而下面处理方法不用.pop直接处理数组是因为
+      // 获取文章的数据请求是已经通过判断发出去了，但在userInfo获取到后触发这个回调时，文章数据有可能还没有获取到 这是直接操作的数组可能还是undefined
+      // 所以最保险的做法是直接重新发送请求 覆盖之前的请求数据
+      if (current.userId == this.$route.params.id) {
+        // this.articleListData.list.pop();
+        this.getArticleById(this.$route.params.id);
+      }
     },
   },
   created() {
