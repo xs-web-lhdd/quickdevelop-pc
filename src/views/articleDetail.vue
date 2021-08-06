@@ -187,8 +187,9 @@ export default {
         this.commentData.list[index].floorCommentList = res.data.data.list;
       } else {
         // 随便往数组添加个数
+        this.commentData.list[index].floorCommentList = [];
         this.commentData.list[index].floorCommentList.push(1);
-        this.$message.warning("此评论暂无回复哦!");
+        // this.$message.warning("此评论暂无回复哦!");
       }
     },
 

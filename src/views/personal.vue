@@ -21,7 +21,12 @@
         </div>
         <div class="right">
           <div @click="changeType('post')">
-            Posts: <span>{{ articleListData && articleListData.total }}</span>
+            Posts:
+            <span>{{
+              articleListData && articleListData.total
+                ? articleListData.total
+                : 0
+            }}</span>
           </div>
           <div @click="changeType('comment')">
             Comments:

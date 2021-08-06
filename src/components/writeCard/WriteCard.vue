@@ -289,26 +289,27 @@ export default {
 
     // 文章图片上传成功的回调
     imgUploadSuccess(e) {
-      console.log(e);
+      // console.log(e);
       let img = `![${e.data.file.name}](${e.data.file.url} "${e.data.file.name}")   `;
       this.newArticleData.articleContent += img;
     },
 
     // 文章图片上传失败的回调
     imgUploadError(e) {
-      console.log(e);
+      // console.log(e);
       this.$message.error("图片上传失败, 请稍后重试!");
     },
 
     // 图片上传前的回调
     beforeImgUpload(file) {
-      console.log(file);
+      // console.log(file);
       // 上传的图片不能超过 1m
       const isImg1M = file.size / 1024 / 1024 <= 1;
       const isImg =
         file.type === "image/jpeg" ||
         file.type === "image/png" ||
         file.type === "image/bmp";
+      const isBlank = file.name.split(" ").length > 1;
 
       if (!isImg) {
         this.$message.warning("上传的图片只能是 JPG/PNG/BMP 格式!");
@@ -316,8 +317,12 @@ export default {
       if (!isImg1M) {
         this.$message.warning("上传的图片大小不能超过 1MB 哦!");
       }
+      // 判断上传的图片是否存在空格
+      if (isBlank) {
+        this.$message.warning("上传的图片名不能包含空格哦!");
+      }
       // 返回false可以阻止图片上传
-      return isImg && isImg1M;
+      return isImg && isImg1M && !isBlank;
     },
   },
 
@@ -326,13 +331,13 @@ export default {
   },
 
   watch: {
-    originArticle(current) {
-      if (current.articleId) {
-        this.newArticleData.typeId = current.typeId;
-        this.newArticleData.articleTitle = current.articleTitle;
-        this.newArticleData.articleContent = current.articleContent;
-        this.newArticleData.articleImage = current.articleImage;
-        this.newArticleData.articleId = current.articleId;
+    isCardShow(current) {
+      if (current && this.originArticle.articleId) {
+        this.newArticleData.typeId = this.originArticle.typeId;
+        this.newArticleData.articleTitle = this.originArticle.articleTitle;
+        this.newArticleData.articleContent = this.originArticle.articleContent;
+        this.newArticleData.articleImage = this.originArticle.articleImage;
+        this.newArticleData.articleId = this.originArticle.articleId;
       }
     },
   },
