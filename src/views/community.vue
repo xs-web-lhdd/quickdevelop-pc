@@ -179,7 +179,7 @@ export default {
     async searchArticle() {
       this.isDataLoad = true;
       let res = await this.$request(
-        `/dqarticle/list?articleTitle=${this.$route.query.articleTitle}`,
+        `/dqarticle/superlist?articleTitle=${this.$route.query.articleTitle}`,
         { pageNum: 1, pageSize: 10 }
       );
       console.log(res);
@@ -444,6 +444,10 @@ export default {
   margin: 15px 0 10px;
   display: flex;
   justify-content: start;
+}
+
+.articleImg img {
+  border-radius: 5px;
 }
 
 .articleImgItem {

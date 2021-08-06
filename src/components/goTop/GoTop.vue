@@ -65,14 +65,15 @@ export default {
 <style scoped>
 .GoTop {
   position: fixed;
-  background-color: #fafafa;
+  background-color: #f8f8f8;
   border-radius: 50%;
   height: 40px;
   width: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   z-index: 10000;
   cursor: pointer;
   bottom: -50px;
@@ -81,6 +82,7 @@ export default {
 
 .showBtn {
   animation: showBtn 0.7s ease;
+  font-weight: bold;
   animation-fill-mode: forwards;
 }
 
@@ -91,11 +93,12 @@ export default {
 
 .GoTop i {
   font-size: 18px;
-  color: rgb(126, 126, 126);
+  color: #666;
 }
 
 .GoTop:hover {
-  background-color: #f5f5f5;
+  box-shadow: 0 20px 25px -8px rgba(0, 0, 0, 0.1),
+    0 10px 10px -8px rgba(0, 0, 0, 0.04);
 }
 
 @keyframes showBtn {

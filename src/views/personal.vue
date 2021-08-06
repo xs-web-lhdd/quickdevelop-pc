@@ -386,6 +386,7 @@ export default {
   display: flex;
   justify-content: center;
   font-size: 15px;
+  background-color: #f8f8f8;
 }
 
 .personal {
@@ -403,7 +404,7 @@ export default {
   background-size: cover;
   background-position-y: 60%;
   color: #f9f9f9;
-  box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 25px 25px -10px rgba(0, 0, 0, 0.25);
   overflow: hidden;
 }
 

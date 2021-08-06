@@ -16,9 +16,11 @@
     </div>
     <div class="bottom">
       <div class="dataCount">
-        <span class="dataItem" @click="gotoPersonal('post')">Posts: 16</span>
+        <span class="dataItem" @click="gotoPersonal('post')"
+          >Posts: {{ articleNum }}</span
+        >
         <span class="dataItem" @click="gotoPersonal('comment')"
-          >Comments: 76</span
+          >Comments: {{ commentNum }}</span
         >
       </div>
     </div>
@@ -35,7 +37,12 @@ export default {
   },
   data() {
     return {
+      // 用户信息
       userInfo: {},
+      // 文章数量
+      articleNum: 0,
+      // 评论数量
+      commentNum: 0,
     };
   },
   methods: {
@@ -45,6 +52,21 @@ export default {
       let res = await this.$request(`/dquser/${id}`);
       // console.log(res);
       this.userInfo = res.data.data;
+    },
+
+    // 猫颜(后端接口作者) 说后面会将评论数量和文章数量直接整合到用户信息中，目前暂时先多发两个请求分别获取这两个数据
+    // 获取用户的文章数量
+    async getUserArticleNum(id) {
+      let res = await this.$request(`/number/dqarticlenumbyuserid/${id}`);
+      console.log(res);
+      this.articleNum = res.data.data;
+    },
+
+    // 获取用户的评论数量
+    async getUserCommentNum(id) {
+      let res = await this.$request(`/number/dqcommentnumbyuserid/${id}`);
+      console.log(res);
+      this.commentNum = res.data.data;
     },
 
     // 跳转至个人主页
@@ -58,6 +80,8 @@ export default {
   },
   created() {
     this.getUserInfoById(this.userId);
+    this.getUserArticleNum(this.userId);
+    this.getUserCommentNum(this.userId);
   },
   watch: {},
 };
@@ -69,8 +93,10 @@ export default {
   height: 250px;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   margin-bottom: 20px;
+  background-color: #fdfdfd;
 }
 
 .userAvatar img {
@@ -111,7 +137,7 @@ export default {
 }
 
 .dataItem {
-  margin: 0 30px;
+  margin: 0 28px;
   cursor: pointer;
   font-weight: bold;
   color: #333;

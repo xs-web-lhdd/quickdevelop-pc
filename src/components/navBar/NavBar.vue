@@ -27,7 +27,7 @@
             <el-image
               :src="
                 userInfo.avatar
-                  ? '/imgreq' + userInfo.avatar.split('.com')[1]
+                  ? userInfo.avatar
                   : require('assets/img/defaultAvatar.jpg')
               "
               fit="cover"

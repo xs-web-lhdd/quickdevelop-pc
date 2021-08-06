@@ -117,7 +117,9 @@ export default {
   border-radius: 10px;
   padding: 20px 0;
   box-sizing: border-box;
-  box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .stepsContainer {

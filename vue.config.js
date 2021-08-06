@@ -21,23 +21,6 @@ module.exports = {
                     '^/forumApi': ''
                 }
             },
-            '/articleImg': {
-                target: 'https://img2.woyaogexing.com/',
-                changeOrigin: true,
-                ws: true,
-                secure: false,
-                pathRewrite: {
-                    '^/articleImg': ''
-                }
-            },
-            '/imgreq': {
-                target: 'https://chen110.oss-cn-guangzhou.aliyuncs.com/',
-                changeOrigin: true,
-                ws: true,
-                pathRewrite: {
-                    '^/imgreq': ''
-                }
-            },
             '/xiaopopan': {
                 target: "http://www.codeman.ink:8001/",
                 changeOrigin: true,

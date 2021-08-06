@@ -139,9 +139,9 @@ export default {
     // 请求
     // 请求文章数据
     async getarticleData(id) {
-      let res = await this.$request(`/dqarticle/${id}`);
-      // console.log(res);
-      this.articleData = res.data.data;
+      let res = await this.$request(`/dqarticle/superlist?articleId=${id}`);
+      console.log(res);
+      this.articleData = res.data.data.list[0];
     },
 
     // 获取文章的点赞数
@@ -312,6 +312,7 @@ export default {
 .articleDetailContainer {
   display: flex;
   justify-content: center;
+  background-color: #f8f8f8;
 }
 
 .articleDetail {
@@ -334,9 +335,9 @@ export default {
 }
 
 .card {
-  box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   overflow: hidden;
-  background-color: #fff;
+  background: #fdfdfd;
   border-radius: 10px;
   margin-bottom: 30px;
 }
@@ -419,7 +420,7 @@ export default {
 }
 
 .commentControl {
-  margin: 20px 30px 25px;
+  margin: 30px 30px 35px;
   padding: 20px 0px 0;
   box-sizing: border-box;
   display: flex;
@@ -427,39 +428,40 @@ export default {
   border-top: 1px solid #eee;
 }
 
+// 网上抄的拟态按钮嘻嘻
 .commentControlItem {
-  padding: 8px 15px;
-  background-color: #e5efff;
-  color: #0066ff;
+  padding: 13px 20px;
+  text-align: center;
   cursor: pointer;
+  border-radius: 5px;
+  color: #666;
+  font-weight: bold;
+  // border: 1px solid #eee;
   font-size: 14px;
-  border-radius: 7px;
+  letter-spacing: 1px;
+  background-color: #f8f8f8;
+  box-shadow: -2px -2px 8px rgba(255, 255, 255, 1),
+    -2px -2px 12px rgba(255, 255, 255, 0.5),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.1), 2px 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .commentControlItem:hover {
-  background-color: #d9e8ff;
-}
-
-.controlItemDone {
-  background-color: #0066ff;
-  color: white;
-}
-
-.controlItemDone:hover {
-  background-color: #0066ff;
+  box-shadow: inset -2px -2px 8px rgba(255, 255, 255, 1),
+    inset -2px -2px 12px rgba(255, 255, 255, 0.5),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.1),
+    inset 2px 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .likeUsersAvatar {
   position: absolute;
   right: 0px;
-  width: 70px;
 }
 
 .likeUsersAvatar img {
   position: absolute;
   right: 0;
-  width: 35px;
-  height: 35px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
 }
 
@@ -469,12 +471,12 @@ export default {
 
 .likeUsersAvatar img:nth-child(2) {
   z-index: 2;
-  right: 17.5px;
+  right: 21px;
 }
 
 .likeUsersAvatar img:nth-child(3) {
   z-index: 1;
-  right: 35px;
+  right: 42px;
 }
 
 .coverImg {

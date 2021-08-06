@@ -122,11 +122,14 @@ export default {
   width: 23.5%;
   height: 410px;
   margin-bottom: 30px;
-  box-shadow: 0px 0px 10px 4px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   overflow: hidden;
   margin-right: 2%;
   cursor: pointer;
+  border: 1px solid #eee;
+  box-sizing: border-box;
 }
 
 .deleteBtn {
@@ -209,7 +212,7 @@ export default {
 }
 
 .addItemImgContainer {
-  background-color: #f5f7fa;
+  background-color: #ececec;
   display: flex;
   align-items: center;
   justify-content: center;
