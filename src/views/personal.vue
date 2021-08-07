@@ -160,7 +160,15 @@
           :on-error="uploadError"
           :before-upload="beforeImgUpload"
         >
-          <img :src="editUserData.avatar" alt="" class="uploadAvatar" />
+          <img
+            :src="
+              editUserData.avatar
+                ? editUserData.avatar
+                : require('assets/img/defaultAvatar.jpg')
+            "
+            alt=""
+            class="uploadAvatar"
+          />
         </el-upload>
       </div>
       <!-- <div class="dialogInputItem">
