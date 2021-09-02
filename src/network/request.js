@@ -1,6 +1,5 @@
 import axios from 'axios'
 
-// 该项目所有请求均为 get请求
 export function request(url, params, type) {
     // 请求超过30秒则判定为超时
     const instance = axios.create({
@@ -13,10 +12,10 @@ export function request(url, params, type) {
     // 请求拦截
     instance.interceptors.request.use(config => {
         // console.log('请求拦截器');
-        if (window.localStorage.getItem('tokenName')) {
-            config.headers.MaoyanToken = window.localStorage.getItem('tokenValue')
-            // config.headers.tokenName = window.localStorage.getItem('tokenName')
-        }
+        // if (window.localStorage.getItem('tokenName')) {
+        // config.headers.MaoyanToken = window.localStorage.getItem('tokenValue')
+        // config.headers.tokenName = window.localStorage.getItem('tokenName')
+        // }
 
         return config
     }, err => {

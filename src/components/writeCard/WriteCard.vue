@@ -228,7 +228,7 @@ export default {
         this.closeCard();
       } else if (res.data.data == "登陆无效") {
         // token失效了 清空token 和 vuex中的用户信息
-        window.localStorage.removeItem("tokenValue");
+        // window.localStorage.removeItem("tokenValue");
         this.$store.commit("updateUserInfo", {});
         this.$message.info("登录失效,请重新登录后重试!");
         return;

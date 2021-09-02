@@ -26,6 +26,7 @@
         <i class="iconfont icon-shanchu1"></i>
       </div>
     </div>
+    <div class="tips">该用户暂无评论!</div>
   </div>
 </template>
 
@@ -182,5 +183,12 @@ export default {
 
 .toUserNickName {
   color: #999;
+}
+
+.tips {
+  color: #666;
+  text-align: center;
+  width: 100%;
+  margin: 50px 0;
 }
 </style>

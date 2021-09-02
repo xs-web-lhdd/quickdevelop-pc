@@ -153,7 +153,7 @@ export default {
 
     // 获取当前用户的点赞状态
     async getIsUserLike(id) {
-      if (!window.localStorage.getItem("tokenValue")) return;
+      if (!this.$store.state.userInfo.userId) return;
 
       let res = await this.$request(`/dqlike/status/${id}`);
       // console.log(res);
@@ -220,7 +220,7 @@ export default {
     async likeCurrentArticle(flag) {
       if (flag) {
         // 判断是否登录
-        if (!window.localStorage.getItem("tokenValue")) {
+        if (!this.$store.state.userInfo.userId) {
           this.$message.info("登录后才能为该文章点赞哦!");
           return;
         }
@@ -232,7 +232,7 @@ export default {
           this.getArticleLike(this.$route.params.id);
         } else if (res.data.data == "登陆无效") {
           // token失效了 清空token 和 vuex中的用户信息
-          window.localStorage.removeItem("tokenValue");
+          // window.localStorage.removeItem("tokenValue");
           this.$store.commit("updateUserInfo", {});
           this.$message.info("登录失效,请重新登录后重试!");
           return;
@@ -260,7 +260,7 @@ export default {
           );
           // console.log(res);
           if (res.data.code == 200) {
-            this.$router.replace("/community");
+            this.$router.go(-1);
           }
         })
         .catch(() => {
@@ -306,6 +306,11 @@ export default {
   },
 
   mounted() {},
+  watch: {
+    "$store.state.userInfo"(current) {
+      this.getIsUserLike(this.$route.params.id);
+    },
+  },
 };
 </script>
 

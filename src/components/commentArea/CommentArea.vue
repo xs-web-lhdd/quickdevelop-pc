@@ -213,7 +213,7 @@ export default {
     // 提交评论
     async submitComment() {
       // 判断是否登录
-      if (!window.localStorage.getItem("tokenValue")) {
+      if (!this.$store.state.userInfo.userId) {
         this.$message.info("登录后才能评论哦!");
         return;
       }
@@ -259,7 +259,7 @@ export default {
         };
       } else if (res.data.data == "登陆无效") {
         // token失效了 清空token 和 vuex中的用户信息
-        window.localStorage.removeItem("tokenValue");
+        // window.localStorage.removeItem("tokenValue");
         this.$store.commit("updateUserInfo", {});
         this.$message.info("登录失效,请重新登录后重试!");
         return;
@@ -287,7 +287,7 @@ export default {
     // 回复当前评论
     replyCurrentComment(replyid, nickName, rootIndex) {
       // 判断是否登录
-      if (!window.localStorage.getItem("tokenValue")) {
+      if (!this.$store.state.userInfo.userId) {
         this.$message.info("登录后才能评论哦!");
         return;
       }

@@ -287,7 +287,7 @@ export default {
     // 点击写文章的回调
     writeArticle() {
       // 判断是否登录
-      if (!window.localStorage.getItem("tokenValue")) {
+      if (!this.$store.state.userInfo.userId) {
         this.$message.info("登录后才能发布文章哦!");
         return;
       }
@@ -443,7 +443,7 @@ export default {
 .articleImg {
   margin: 15px 0 10px;
   display: flex;
-  justify-content: start;
+  justify-content: flex-start;
 }
 
 .articleImg img {

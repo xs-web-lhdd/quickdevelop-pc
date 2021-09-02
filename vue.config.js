@@ -28,6 +28,13 @@ module.exports = {
                 pathRewrite: {
                     '^/xiaopopan': ''
                 }
+            },
+            '/gitee': {
+                target: "https://gitee.com",
+                changeOrigin: true,
+                pathRewrite: {
+                    '^/gitee': ''
+                }
             }
         }
     },

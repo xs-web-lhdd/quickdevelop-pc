@@ -30,7 +30,7 @@
           </div>
           <div @click="changeType('comment')">
             Comments:
-            <span>{{ commentData && commentData.total }}</span>
+            <span>{{ (commentData && commentData.total) || 0 }}</span>
           </div>
           <div>Views: <span>1.2k</span></div>
         </div>
@@ -286,19 +286,29 @@ export default {
         pageNum: this.$route.query.page,
         pageSize: 16,
       });
-      console.log(res);
+      // console.log(res);
+      if (res.data.code !== 200) {
+        this.commentData = [];
+        return;
+      }
       this.commentData = res.data.data;
     },
 
     // 事件
     // 点击退出登录的回调
-    logout() {
+    async logout() {
       // 清空vuex和localstorage中的数据
-      window.localStorage.removeItem("tokenValue");
+      // window.localStorage.removeItem("tokenValue");
+      let res = await this.$request("/dquser/logout");
+      // console.log(res);
+      if (res.data.code != 200) {
+        this.$message.error("退出失败!");
+        return;
+      }
       this.$store.commit("updateUserInfo", {});
-
+      this.$store.commit("updateReFreshUserInfo", true);
       // 跳转至登录界面
-      this.$router.replace("/login");
+      // this.$router.replace("/login");
     },
 
     // 点击编辑用户的回调
@@ -420,6 +430,7 @@ export default {
   justify-content: center;
   font-size: 15px;
   background-color: #f8f8f8;
+  min-height: calc(100vh - 74px);
 }
 
 .personal {

@@ -68,18 +68,19 @@ export default {
     // 请求用户信息
     async getUserInfo() {
       // 判断是否有token 没有token则不获取用户信息
-      if (!window.localStorage.getItem("tokenValue")) {
-        return;
-      }
+      // if (!window.localStorage.getItem("tokenValue")) {
+      //   return;
+      // }
 
       let res = await this.$request("/dquser/getnowuser");
       // console.log(res);
       // 判断token是否过期或失效
       if (res.data.code != 200) {
         // 如果过期或失效 清空token 并return
-        window.localStorage.removeItem("tokenValue");
+        // window.localStorage.removeItem("tokenValue");
+        this.userInfo = {};
         this.$store.commit("updateUserInfo", {});
-        this.$message.info("登录信息失效, 请重新登录!");
+        // this.$message.info("登录信息失效, 请重新登录!");
         return;
       }
 
@@ -100,7 +101,8 @@ export default {
     // 跳转至个人页面
     gotoPersonal() {
       // 判断是否登录
-      if (!window.localStorage.getItem("tokenValue")) {
+      // 通过查看vuex中的userInfo是否为空来判断是否登录
+      if (!this.$store.state.userInfo.userId) {
         // 跳转至登录界面
         this.$router.push("/login");
         return;
@@ -223,7 +225,7 @@ export default {
 .right {
   display: flex;
   align-items: center;
-  justify-content: start;
+  justify-content: flex-start;
 }
 
 .fenge {

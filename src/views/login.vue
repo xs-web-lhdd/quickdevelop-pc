@@ -50,6 +50,17 @@
               <el-button type="primary" @click="onSubmit">登录</el-button>
             </el-form-item>
           </el-form>
+          <!-- 第三方登录方式 -->
+          <div class="otherLoginWays">
+            <a
+              href="https://gitee.com/oauth/authorize?client_id=e21ada1875792c7df538e290dc403e377289ccfa94343a4aed715cd7f9297ee2&redirect_uri=http://www.codeman.ink:8848/login&response_type=code"
+            >
+              <div class="otherLoginItem">
+                <img src="~assets/img/gitee.png" alt="" />
+                <span>使用Gitee一键登录</span>
+              </div>
+            </a>
+          </div>
         </div>
         <div class="registeredInput" v-else>
           <div class="tips">
@@ -96,6 +107,7 @@
 
 <script>
 import NavBar from "components/navBar/NavBar.vue";
+
 export default {
   name: "Login",
   components: { NavBar },
@@ -117,6 +129,22 @@ export default {
     };
   },
   methods: {
+    // 请求
+    // gitee登录
+    async giteeLogin(code) {
+      let res = await this.$request("/login/gitee", { code });
+      // console.log(res);
+      if (res.data.code == 200) {
+        this.isLoginSuccess = true;
+        setTimeout(() => {
+          //   跳转至主界面
+          this.$router.replace("/index");
+        }, 500);
+      } else {
+        this.$message.warning("登录失败,请稍后重试!");
+      }
+    },
+
     //   点击登录的回调
     async onSubmit() {
       // 登录前先稍作判断，如果有空没填，则不发送请求
@@ -133,8 +161,8 @@ export default {
 
         // 将tokenName和tokenValue 以及用户信息保存至本地
         // window.localStorage.setItem("tokenName", res.data.data.tokenName);
-        window.localStorage.setItem("tokenValue", res.data.data.tokenValue);
-        window.localStorage.setItem("userName", this.login.userName);
+        // window.localStorage.setItem("tokenValue", res.data.data.tokenValue);
+        // window.localStorage.setItem("userName", this.login.userName);
 
         this.isLoginSuccess = true;
         setTimeout(() => {
@@ -182,6 +210,15 @@ export default {
         this.$message.error("注册失败,请稍后重试!");
       }
     },
+  },
+  created() {
+    // document.cookie = document.cookie + "username=John Doe;";
+    // console.log(document.cookie);
+    // 判断是否是第三方登录  通过查看参数是否包含code判断
+    if (this.$route.query.code) {
+      console.log(this.$route.query.code);
+      this.giteeLogin(this.$route.query.code);
+    }
   },
 };
 </script>
@@ -239,6 +276,18 @@ export default {
   top: 10vh;
   transform: translateX(calc(-50% + 26px));
   transition: all 0.5s ease;
+  animation: showMain 1.2s ease forwards;
+}
+
+@keyframes showMain {
+  from {
+    opacity: 0;
+    visibility: hidden;
+  }
+  to {
+    visibility: visible;
+    opacity: 1;
+  }
 }
 
 .hideMain {
@@ -341,5 +390,30 @@ export default {
 .buttonItem:hover {
   background-color: #5cd9f8;
   color: #f3f3f3;
+}
+
+.otherLoginWays {
+  padding-top: 20px;
+  text-align: center;
+}
+
+.otherLoginItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.otherLoginItem img {
+  width: 40px;
+}
+
+.otherLoginItem span {
+  color: #333;
+  margin-left: 15px;
+}
+
+a {
+  text-decoration: none;
 }
 </style>
