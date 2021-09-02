@@ -251,6 +251,7 @@ export default {
   align-items: center;
   margin-bottom: 10px;
   justify-content: center;
+  height: 65px;
 }
 
 .logo {
@@ -357,9 +358,10 @@ export default {
 
 .leftButton {
   position: absolute;
-  left: -199px;
-  top: 147px;
+  left: -52px;
+  top: 345px;
   z-index: -1;
+  transform-origin: top left;
   transform: rotate(-90deg);
   display: flex;
 }
@@ -380,6 +382,14 @@ export default {
   font-weight: bold;
   transition: all 0.4s;
   user-select: none;
+}
+
+.buttonItem:nth-child(2) {
+  width: 145px;
+}
+
+.buttonItem:nth-child(1) {
+  width: 180px;
 }
 
 .buttonItem i {
