@@ -147,6 +147,7 @@ export default {
         pageNum: this.currentPage,
         pageSize: 10,
       });
+      console.log(res);
       // console.log(res);
       if (res.data.code == 200) {
         this.articleListData = res.data.data;

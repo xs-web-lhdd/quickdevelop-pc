@@ -3,6 +3,7 @@
     <div class="commentText">
       评论区 ({{ commentData.total ? commentData.total : 0 }})
     </div>
+    <!-- 输入框 -->
     <div class="commentInput">
       <el-input
         type="textarea"
@@ -362,7 +363,7 @@ export default {
 
       this.$emit("changePage", e);
     },
-  },
+  }
 };
 </script>
 

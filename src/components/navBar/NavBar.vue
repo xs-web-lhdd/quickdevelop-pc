@@ -73,6 +73,7 @@ export default {
       // }
 
       let res = await this.$request("/dquser/getnowuser");
+      // console.log(res)
       // console.log(res);
       // 判断token是否过期或失效
       if (res.data.code != 200) {

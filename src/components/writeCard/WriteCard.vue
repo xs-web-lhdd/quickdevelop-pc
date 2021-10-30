@@ -238,7 +238,7 @@ export default {
     // 获取文章分类
     async getArticalType() {
       let res = await this.$request("/dqtype/list", { pageSize: 30 });
-      console.log(res);
+      // console.log(res);
       this.articleType = res.data.data.list;
     },
 

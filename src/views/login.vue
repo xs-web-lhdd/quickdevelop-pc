@@ -217,6 +217,7 @@ export default {
     // 判断是否是第三方登录  通过查看参数是否包含code判断
     if (this.$route.query.code) {
       console.log(this.$route.query.code);
+      console.log(this.$route.query.code);
       this.giteeLogin(this.$route.query.code);
     }
   },

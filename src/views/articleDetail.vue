@@ -140,7 +140,7 @@ export default {
     // 请求文章数据
     async getarticleData(id) {
       let res = await this.$request(`/dqarticle/superlist?articleId=${id}`);
-      console.log(res);
+      // console.log('=>>>>', res);
       this.articleData = res.data.data.list[0];
     },
 

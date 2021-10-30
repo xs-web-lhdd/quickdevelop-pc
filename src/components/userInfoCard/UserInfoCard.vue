@@ -58,14 +58,14 @@ export default {
     // 获取用户的文章数量
     async getUserArticleNum(id) {
       let res = await this.$request(`/number/dqarticlenumbyuserid/${id}`);
-      console.log(res);
+      // console.log(res);
       this.articleNum = res.data.data;
     },
 
     // 获取用户的评论数量
     async getUserCommentNum(id) {
       let res = await this.$request(`/number/dqcommentnumbyuserid/${id}`);
-      console.log(res);
+      // console.log(res);
       this.commentNum = res.data.data;
     },
 

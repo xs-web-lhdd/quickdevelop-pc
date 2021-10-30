@@ -2,7 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 const Index = () => import('views/index.vue')
-const Home = () => import('views/home.vue')
+const Home = () => import('../views/Home.vue')
 const Blogs = () => import('views/blogs.vue')
 const Community = () => import('views/community.vue')
 const Login = () => import('views/login.vue')
